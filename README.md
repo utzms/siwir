@@ -1,4 +1,5 @@
 siwir-repo
 ========
---------
-Repository for SiWir Exercises
+-----------------------------
+Repository for SiWir Exercise
+------------------------------
