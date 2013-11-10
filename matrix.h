@@ -7,11 +7,13 @@
 #include <cstdlib>
 class Matrix
 {
+	private:
     size_t ndim;
     size_t mdim;
     size_t size;
     double *dataPointer;
 
+public:
     Matrix  (const int n,const int m){
         ndim=n;
         mdim=m;
@@ -23,16 +25,16 @@ class Matrix
     Matrix (std::string filename)
     {
 
-        std::fstream inputFile(filename, "r");
+		std::ifstream inputFile(filename, std::ios::in);
         std::string dimensions;
         int ntmp;
         int mtmp;
 
-        mtmp << inputFile;
-        ntmp << inputFile;
+		inputFile  >>  mtmp;
+        inputFile >> ntmp;
 
-        ndim = static_cast(ntmp);
-        mdim = static_cast(mtmp);
+		ndim = static_cast<size_t>(ntmp);
+		mdim = static_cast<size_t>(mtmp);
 
         /* extract matrix dimensions
         int space = dimensions.find(" ");
@@ -45,7 +47,7 @@ class Matrix
 
         for(size_t i = 0;i < size; i++)
         {
-            dataPointer[i++] << vinputFile;
+            inputFile >> dataPointer[i++];
         }
 
     }
@@ -60,13 +62,13 @@ class Matrix
 
     void setIdentity()
     {
-        for(int i = 0; i< size; ++i)
+		for(size_t i = 0; i < size; ++i)
         {
             dataPointer[i] = 0;
         }
 
         int count = 0;
-        for(int i = 0; i < size; i+=ndim)
+		for(size_t i = 0; i < size; i+=ndim)
         {
             dataPointer[i + count] = 1;
             count++;
@@ -75,12 +77,13 @@ class Matrix
 
     void print()
     {
-        std::cout << "Dimensions: " << ndim << " x " << mdim<< std::endl;
-        for(int i = 0; i < size; i++)
+        std::cout << "Dimensions: " << ndim << " x " << mdim << std::endl;
+		for(size_t i = 0; i < size; ++i)
         {
-            std::cout << dataPointer[i] << " ";
-            if(i % mdim) std::cout << std::endl;
+			if((i % (ndim)) == 0 && i != 0){ std::endl (std::cout); }
+            std::cout << dataPointer[i] << ' ';
         }
+		std::endl (std::cout);
     }
 };
 #endif // MATRIX_H
