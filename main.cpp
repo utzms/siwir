@@ -2,11 +2,12 @@
 
 int main(int argc, char *argv[]){
 
-	Matrix testmatrix(2,3);
+	Matrix testmatrix("matrix.txt");
 	testmatrix.setIdentity();
-	Matrix testmatrix2(3,2);
+	Matrix testmatrix2("matrix1.txt");
 	testmatrix2.setIdentity();
 	testmatrix.print();
+	testmatrix2.print();
 	testmatrix2 = testmatrix*testmatrix2;
 	testmatrix2.print();
 	int i = 0;

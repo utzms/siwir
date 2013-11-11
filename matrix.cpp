@@ -3,7 +3,8 @@
 Matrix::Matrix  (const int n,const int m){
         ndim=n;
         mdim=m;
-        size=n*m;
+        size=n*m;i
+	offset 
         dataPointer = createLinArray();
     }
 
@@ -16,7 +17,7 @@ Matrix::Matrix (std::string filename)
         int ntmp;
         int mtmp;
 
-		inputFile >> mtmp;
+	inputFile >> mtmp;
         inputFile >> ntmp;
 
 	ndim = static_cast<size_t>(ntmp);
@@ -72,7 +73,7 @@ Matrix::Matrix (std::string filename)
 
     void Matrix::print()
     {
-        std::cout << ndim << " " << mdim << std::endl;
+        std::cout << "Dim: " <<mdim << " " << ndim << std::endl;
 		for(size_t i = 0; i < size; ++i)
         {
 			if((i % (ndim)) == 0 && i != 0){ std::endl (std::cout); }
@@ -104,15 +105,71 @@ Matrix::Matrix (std::string filename)
 
 		for(size_t i = 0; i < mdim ; ++i)
 		{
-			for(size_t j = 0; j < ndim; ++j)
+			for(size_t j = 0; j < MatrixB.ndim; ++j)
 			{
 				double rowSum = 0;
-				for(size_t rowi = 0; rowi < MatrixC->ndim; ++rowi)
+				for(size_t rowi = 0; rowi < ndim; ++rowi)
 				{
-					rowSum += (dataPointer[i*ndim + rowi] * MatrixB.dataPointer[j + rowi*mdim]);
+					rowSum += (dataPointer[i*ndim + rowi] * MatrixB.dataPointer[j + rowi * MatrixB.ndim]);
 				}
 				MatrixC->dataPointer[i*MatrixC->ndim + j] = rowSum;
 			}
 		}
 		return *MatrixC;
 	}
+	
+/*
+	void matmul(const int M, const int N, const int K, double * A, const int lda, double * B, int ldb, double * C, int c)
+	{
+		
+		vector<Matrix &> subMatB;
+		vector<Matrix &> subMatB;
+		subMatA = split(A);
+		subMatB = split(B);
+	
+		if( M < 9 && N < 9  )
+	
+			{
+				size_t i = 0; i < M ; ++i)
+	               		 {
+	               		         for(size_t j = 0; j < N; ++j)
+	               		         {
+	                	                double rowSum = 0;
+	             	  	                for(size_t rowi = 0; rowi < ndim; ++rowi)
+	                               	 {
+	                                        rowSum += (dataPointer[i*ndim + rowi] * MatrixB.dataPointer[j + rowi * MatrixB.ndim]);
+	                                }
+	                                MatrixC->dataPointer[i*MatrixC->ndim + j] = rowSum;
+	                        }
+	                }
+		}
+	
+	}
+	
+	void matmult(Matrix& A, Matrix& B, Matrix& C)
+	{
+		if( M < 9 && N < 9  )
+		{
+			 for(size_t i = 0; i < M ; ++i)
+	               	 {
+	               	         for(size_t j = 0; j < N; ++j)
+	               	         {
+	                                double rowSum = 0;
+	                                for(size_t rowi = 0; rowi < ndim; ++rowi)
+	                                {
+	                                        rowSum += (dataPointer[i*ndim + rowi] * MatrixB.dataPointer[j + rowi * MatrixB.ndim]);
+	                                }
+	                                MatrixC->dataPointer[i*MatrixC->ndim + j] = rowSum;
+	                        }
+	                }
+			return
+		}
+		vector<Matrix &> subMatB;
+		vector<Matrix &> subMatB;
+		subMatA = split(A);
+		subMatB = split(B);
+		
+		subMatA
+		
+	}
+*/
