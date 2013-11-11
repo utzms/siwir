@@ -4,7 +4,7 @@ int main(int argc, char *argv[]){
 
 	Matrix testmatrix("matrix.txt");
 	testmatrix.setIdentity();
-	Matrix testmatrix2("matrix1.txt");
+	Matrix testmatrix2(3,3);
 	testmatrix2.setIdentity();
 	testmatrix.print();
 	testmatrix2.print();
