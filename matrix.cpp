@@ -116,7 +116,7 @@ Matrix::Matrix (std::string filename)
 		}
 		return *MatrixC;
 	}
-/*	
+	/*
 	void matmul(const int M, const int N, const int K, double * A, const int lda, double * B, int ldb, double * C, int c)
 	{
 		
@@ -143,8 +143,8 @@ Matrix::Matrix (std::string filename)
 		}
 	
 	}
-	
-	void matmult(Matrix& A, Matrix& B, Matrix& C)
+	*/
+	void Matrix::matmult(Matrix& A, Matrix& B, Matrix& C)
 	{
 		if( M < 9 && N < 9  )
 		{
@@ -155,12 +155,12 @@ Matrix::Matrix (std::string filename)
 	                                double rowSum = 0;
 	                                for(size_t rowi = 0; rowi < ndim; ++rowi)
 	                                {
-	                                        rowSum += (dataPointer[i*ndim + rowi] * MatrixB.dataPointer[j + rowi * MatrixB.ndim]);
+	                                        rowSum += (dataPointer[i*ndim + rowi] * B.dataPointer[j + rowi * B.ndim]);
 	                                }
-	                                MatrixC->dataPointer[i*MatrixC->ndim + j] = rowSum;
+	                                C.dataPointer[i*MatrixC->ndim + j] = rowSum;
 	                        }
 	                }
-			return
+			return;
 		}
 		vector<Matrix &> subMatB;
 		vector<Matrix &> subMatB;
@@ -168,17 +168,28 @@ Matrix::Matrix (std::string filename)
 		subMatB = B.split();
 		
 		Matrix M1(A.mdim, B.ndim);	
-		Matrix M2(A.mdim, B.ndim);	
-		Matrix M3(A.mdim, B.ndim);	
+		Matrix sumA1A4(A.mdim, B.ndim);	
+		Matrix sumB1B4(A.mdim, B.ndim);	
+
+		Matrix M2(A.mdim, B.ndim);
+		Matrix sumA3A4(A.mdim, B.ndim);
+		Matrix sumB2B4(A.mdim, B.ndim);
+
+		Matrix M3(A.mdim, B.ndim);
+		Matrix difB2B1(A.mdim, B.ndim);
+		
 		Matrix M4(A.mdim, B.ndim);	
+		Matrix M4(A.mdim, B.ndim);	
+
+
 		Matrix M5(A.mdim, B.ndim);	
 	
-		matmult((subMatA[0] + subMatA[2]), (subMatB[1] + subMatB[2]) , M5);
-		M2 = matmult(subMatA[3]);
+		matmult( , (subMatB[0] + subMatB[1]) , M1);
+		matmult(subMatA[3], M2);
 		matmult(subMatA[0]);
 		matmult(subMatA[0]);
 		matmult(subMatA[0]);
 		matmult(subMatA[0]);
 		
 	}
-*/
+
