@@ -3,8 +3,7 @@
 Matrix::Matrix  (const int n,const int m){
         ndim=n;
         mdim=m;
-        size=n*m;i
-	offset 
+        size=n*m; 
         dataPointer = createLinArray();
     }
 
@@ -117,8 +116,7 @@ Matrix::Matrix (std::string filename)
 		}
 		return *MatrixC;
 	}
-	
-/*
+/*	
 	void matmul(const int M, const int N, const int K, double * A, const int lda, double * B, int ldb, double * C, int c)
 	{
 		
@@ -128,9 +126,9 @@ Matrix::Matrix (std::string filename)
 		subMatB = split(B);
 	
 		if( M < 9 && N < 9  )
-	
+		{
 			{
-				size_t i = 0; i < M ; ++i)
+				for(size_t i = 0; i < M ; ++i)
 	               		 {
 	               		         for(size_t j = 0; j < N; ++j)
 	               		         {
@@ -166,10 +164,21 @@ Matrix::Matrix (std::string filename)
 		}
 		vector<Matrix &> subMatB;
 		vector<Matrix &> subMatB;
-		subMatA = split(A);
-		subMatB = split(B);
+		subMatA = A.split();
+		subMatB = B.split();
 		
-		subMatA
+		Matrix M1(A.mdim, B.ndim);	
+		Matrix M2(A.mdim, B.ndim);	
+		Matrix M3(A.mdim, B.ndim);	
+		Matrix M4(A.mdim, B.ndim);	
+		Matrix M5(A.mdim, B.ndim);	
+	
+		matmult((subMatA[0] + subMatA[2]), (subMatB[1] + subMatB[2]) , M5);
+		M2 = matmult(subMatA[3]);
+		matmult(subMatA[0]);
+		matmult(subMatA[0]);
+		matmult(subMatA[0]);
+		matmult(subMatA[0]);
 		
 	}
 */
