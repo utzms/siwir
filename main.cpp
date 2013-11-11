@@ -2,9 +2,9 @@
 
 int main(int argc, char *argv[]){
 
-	Matrix testmatrix(3,3);
+	Matrix testmatrix(2,3);
 	testmatrix.setIdentity();
-	Matrix testmatrix2(3,3);
+	Matrix testmatrix2(3,2);
 	testmatrix2.setIdentity();
 	testmatrix.print();
 	testmatrix2 = testmatrix*testmatrix2;

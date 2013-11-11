@@ -11,7 +11,7 @@ Matrix::Matrix  (const int n,const int m){
 Matrix::Matrix (std::string filename)
     {
 
-		std::ifstream inputFile(filename, std::ios::in);
+	std::ifstream inputFile(filename.c_str(), std::ios::in);
         std::string dimensions;
         int ntmp;
         int mtmp;
@@ -19,9 +19,9 @@ Matrix::Matrix (std::string filename)
 		inputFile >> mtmp;
         inputFile >> ntmp;
 
-		ndim = static_cast<size_t>(ntmp);
-		mdim = static_cast<size_t>(mtmp);
-		size=ndim*mdim;
+	ndim = static_cast<size_t>(ntmp);
+	mdim = static_cast<size_t>(mtmp);
+	size=ndim*mdim;
         /* extract matrix dimensions
         int space = dimensions.find(" ");
         std::string nDimString = dimensions.substr(0,space);
@@ -42,7 +42,7 @@ Matrix::Matrix (std::string filename)
 	{
 		if(m >= mdim || n >= ndim)
 		{
-			throw std::invalid_argument("Matrix::setValue: Position is out of range");
+			std::cout << "Matrix::setValue: Position is out of range" << std::endl;
 		}
 		dataPointer[m*ndim + n] = value;
 	}
@@ -83,8 +83,8 @@ Matrix::Matrix (std::string filename)
 
 	 void Matrix::print(std::string filename)
     {
-		std::ofstream outputFile(filename, std::ios::out);
-        outputFile << "Dimensions: " << mdim << " x " << ndim << std::endl;
+		std::ofstream outputFile(filename.c_str(), std::ios::out);
+        outputFile <<  mdim << " " << ndim << std::endl;
 		for(size_t i = 0; i < size; ++i)
         {
 			if((i % (ndim)) == 0 && i != 0){ std::endl (outputFile); }
@@ -99,7 +99,7 @@ Matrix::Matrix (std::string filename)
 
 		if(ndim != MatrixB.mdim)
 		{
-			throw std::invalid_argument("Matrix::operator*: Inner Dimensions don't match");
+			std::cout << "Matrix::operator*: Inner Dimensions don't match" << std::endl;
 		}
 
 		for(size_t i = 0; i < mdim ; ++i)
@@ -107,7 +107,7 @@ Matrix::Matrix (std::string filename)
 			for(size_t j = 0; j < ndim; ++j)
 			{
 				double rowSum = 0;
-				for(int rowi = 0; rowi < MatrixC->ndim; ++rowi)
+				for(size_t rowi = 0; rowi < MatrixC->ndim; ++rowi)
 				{
 					rowSum += (dataPointer[i*ndim + rowi] * MatrixB.dataPointer[j + rowi*mdim]);
 				}
