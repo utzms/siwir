@@ -2,8 +2,8 @@
 
 int main(int argc, char *argv[]){
 
-	Matrix testmatrix("matrix.txt");
-	Matrix testmatrix1("matrix.txt");
+	Matrix testmatrix(8,8);
+	Matrix testmatrix1(8,8);
 	testmatrix.setIdentity();
 	testmatrix1.setIdentity();
 	Matrix testmatrix2(8,8);

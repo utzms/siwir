@@ -127,9 +127,9 @@ Matrix::Matrix(std::string filename)
 
 	void Matrix::split(std::vector<Matrix> subMat)
 	{
-		for(int i = 0; i < ndim/2 ; ++i)
+		for(size_t i = 0; i < ndim/2 ; ++i)
 		{
-			for(int j = 0; j < ndim/2 ;++j)
+			for(size_t j = 0; j < ndim/2 ;++j)
 			{
 				subMat[0].dataPointer[i * ndim/2 + j] = dataPointer[i * ndim + j];
 				subMat[1].dataPointer[i * ndim/2 + j] = dataPointer[i * ndim + j + (int)(ndim*0.5)];
@@ -185,7 +185,7 @@ Matrix::Matrix(std::string filename)
 	*/
 	void Matrix::matmult(Matrix& A, Matrix& B, Matrix& C)
 	{
-		if( A.ndim < 4 && B.ndim < 4  )
+		if( A.ndim <= 4 && B.ndim <= 4  )
 		{
 			for(size_t i = 0; i < A.mdim ; ++i)
 				{
@@ -232,7 +232,7 @@ Matrix::Matrix(std::string filename)
 
 		Matrix M4(dimA, dimA);
 		Matrix diffB3B1(dimA, dimA);
-		diffB3B1.diffOf(subMatB[1],subMatB[0]);
+		diffB3B1.diffOf(subMatB[2],subMatB[0]);
 
 		Matrix M5(dimA, dimA);
 		Matrix sumA1A2(dimA, dimA);
@@ -246,7 +246,7 @@ Matrix::Matrix(std::string filename)
 
 		Matrix M7(dimA, dimA);
 		Matrix diffA2A4(dimA, dimA);
-		diffA2A4.diffOf(subMatA[0],subMatA[1]);
+		diffA2A4.diffOf(subMatA[1],subMatA[3]);
 		Matrix sumB3B4(dimA, dimA);
 		sumB3B4.sumOf(subMatB[2],subMatB[3]);
 
@@ -256,15 +256,15 @@ Matrix::Matrix(std::string filename)
 		matmult(subMatA[3], diffB3B1, M4);
 		matmult(sumA1A2, subMatB[3], M5 );
 		matmult(diffA3A1, sumB1B2, M6);
-		matmult(diffA2A4,sumB3B4,M7);
-		for(int i = 0; i < dimA ; ++i)
+		matmult(diffA2A4,sumB3B4, M7);
+		for(size_t i = 0; i < dimA ; ++i)
 		{
-			for(int j = 0; j < dimA ;++j)
+			for(size_t j = 0; j < dimA ;++j)
 			{
 				C.dataPointer[i * C.ndim + j] = M1.dataPointer[i * dimA + j] + M4.dataPointer[i * dimA + j] - M5.dataPointer[i * dimA + j] + M7.dataPointer[i * dimA + j];
-				C.dataPointer[i * C.ndim + j + (int)(C.ndim*0.5)] = M3.dataPointer[i * dimA + j] + M5.dataPointer[i * dimA + j];
-				C.dataPointer[i * C.ndim + j + (C.ndim*2)] = M2.dataPointer[i * dimA + j] + M4.dataPointer[i * dimA + j];
-				C.dataPointer[i * C.ndim + j + (int)(C.ndim*2.5)] = M1.dataPointer[i * dimA + j] - M4.dataPointer[i * dimA + j] + M3.dataPointer[i * dimA + j] + M6.dataPointer[i * dimA + j];
+				C.dataPointer[i * C.ndim + j + static_cast<size_t>(C.ndim*0.5)] = M3.dataPointer[i * dimA + j] + M5.dataPointer[i * dimA + j];
+				C.dataPointer[i * C.ndim + j + (C.ndim+C.ndim)] = M2.dataPointer[i * dimA + j] + M4.dataPointer[i * dimA + j];
+				C.dataPointer[i * C.ndim + j + static_cast<size_t>(C.ndim*2.5)] = M1.dataPointer[i * dimA + j] - M2.dataPointer[i * dimA + j] + M3.dataPointer[i * dimA + j] + M6.dataPointer[i * dimA + j];
 			}
 		}
 		C.print();
