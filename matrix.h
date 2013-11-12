@@ -28,6 +28,6 @@ class Matrix
     void print();
 	void print(std::string filename);
 	Matrix& operator* (Matrix MatrixB);
-	void matmult(Matrix & A, Matrix & B, Matrix & C);
+	static void matmult(Matrix & A, Matrix & B, Matrix & C);
 };
 #endif // MATRIX_H

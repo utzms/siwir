@@ -3,11 +3,18 @@
 int main(int argc, char *argv[]){
 
 	Matrix testmatrix("matrix.txt");
+	Matrix testmatrix1("matrix.txt");
+	testmatrix.setIdentity();
+	testmatrix1.setIdentity();
+	Matrix testmatrix2(8,8);
+	testmatrix2.setIdentity();
+	Matrix testmatrix3(8,8);
 	std::vector<Matrix> matrixVector;
-	matrixVector.push_back(Matrix(2,2));
-	testmatrix.split(matrixVector);
 	testmatrix.print();
-	matrixVector[0].print();
+	Matrix::matmult(testmatrix,testmatrix1,testmatrix2);
+	testmatrix3 = testmatrix*testmatrix1;
+	testmatrix2.print();
+	testmatrix3.print();
 	int i = 0;
 	while(std::cin >> i);
 return 0;
