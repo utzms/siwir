@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -O3 -Wall -Winline -Wshadow -ansi
+CXXFLAGS = -O3 -Wall -Winline -Wshadow -ansi -g
 TARGET = matmult
 
 
