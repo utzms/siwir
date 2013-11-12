@@ -131,19 +131,13 @@ Matrix::Matrix(std::string filename)
 		subMat.push_back(Matrix(ndim/2,mdim/2));
 		subMat.push_back(Matrix(ndim/2,mdim/2));
 		subMat.push_back(Matrix(ndim/2,mdim/2));
-		/*
 		for(int i = 0; i < ndim/2 ; ++i)
 		{
 			for(int j = 0; j < ndim/2 ;++j)
 			{
-
 			subMat[0].dataPointer[i] = dataPointer[i];
-			subMat[1].dataPointer[i] = dataPointer[i + 2*ndim];
-			subMat[2].dataPointer[i] = dataPointer[i + 2*ndim];
-			subMat[3].dataPointer[i] = dataPointer[i + 2*ndim];
 			}
 		}
-		*/
 	}
 
 	void Matrix::sumOf(Matrix & A, Matrix & B)

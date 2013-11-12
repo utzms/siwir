@@ -15,9 +15,10 @@ class Matrix
     double *dataPointer;
 	void diffOf(Matrix &A, Matrix &B);
 	void sumOf(Matrix &A,Matrix &B);
-	void split(std::vector<Matrix> subMat);
+	
 
 	public:
+	void split(std::vector<Matrix> subMat);
 	Matrix (const int n,const int m);
 	Matrix (const int n,const int m,double * datapointer);
     Matrix (std::string filename);
