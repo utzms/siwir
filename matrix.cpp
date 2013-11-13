@@ -2,10 +2,13 @@
 
 Matrix::Matrix(const int n,const int m)
 	{
+	//static int count = 0;
         ndim=n;
         mdim=m;
         size=n*m; 
         dataPointer = createLinArray();
+	//std::cout << count << std::endl;
+	//count++;
     }
 
 Matrix::Matrix(const int n, const int m, double * datapointer)
@@ -186,7 +189,7 @@ Matrix::Matrix(std::string filename)
 	*/
 	void Matrix::matmult(Matrix& A, Matrix& B, Matrix& C)
 	{
-		if( A.ndim <= 16  && B.ndim <= 16  )
+		if( A.ndim < 16  && B.ndim < 16  )
 		{
 			for(size_t i = 0; i < A.mdim ; ++i)
 				{
@@ -259,8 +262,7 @@ Matrix::Matrix(std::string filename)
 		matmult(diffA3A1, sumB1B2, M6);
 		matmult(diffA2A4,sumB3B4, M7);
 		
-		for(size_t i = 0; i < newDim ; ++i)
-		{
+		for(size_t i = 0; i < newDim ; ++i){
 			for(size_t j = 0; j < newDim ;++j)
 			{
 				C.dataPointer[i * C.ndim + j] = M1.dataPointer[i * newDim + j] + M4.dataPointer[i * newDim + j] - M5.dataPointer[i * newDim + j] + M7.dataPointer[i * newDim + j];
