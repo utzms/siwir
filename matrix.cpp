@@ -186,7 +186,7 @@ Matrix::Matrix(std::string filename)
 	*/
 	void Matrix::matmult(Matrix& A, Matrix& B, Matrix& C)
 	{
-		if( A.ndim < 4  && B.ndim < 4  )
+		if( A.ndim <= 16  && B.ndim <= 16  )
 		{
 			for(size_t i = 0; i < A.mdim ; ++i)
 				{

@@ -1,5 +1,5 @@
 #include "matrix.h"
-
+#include <sys/time.h>
 int main(int argc, char *argv[]){
 
 	if(argc != 4){
@@ -7,11 +7,11 @@ int main(int argc, char *argv[]){
 		return -1;
 	}
 	
-	Matrix testmatrix(argv[1]);
-	Matrix testmatrix1(argv[2]);
-	Matrix testmatrix2(32,32);
+	Matrix inputMatrix(argv[1]);
+	Matrix inputMatrix1(argv[2]);
+	Matrix testmatrix2(inputMatrix.getMdim(),inputMatrix1.getNdim());
+	Matrix testmatrix3(inputMatrix.getMdim(),inputMatrix1.getNdim());
 	//testmatrix2.setIdentity();
-	Matrix testmatrix3(32,32);
 	//testmatrix.print();
 	//testmatrix1.print();
 	/*
@@ -23,11 +23,17 @@ int main(int argc, char *argv[]){
 	testmatrix.split(matrixVector);
 	*/
 	//testmatrix.print();
-	//Matrix::matmult(testmatrix,testmatrix1,testmatrix2);
-	testmatrix3 = testmatrix*testmatrix1;
+	timeval timeStart, timeEnd ;
+	gettimeofday(&timeStart, 0);
+	Matrix::matmult(inputMatrix,inputMatrix1,testmatrix2);
+	//testmatrix3 = inputMatrix*inputMatrix1;
+	gettimeofday(&timeEnd, 0);
+	std::cout << "Laufzeit: " << timeEnd.tv_sec - timeStart.tv_sec << std::endl;
+	std::cout << "Laufzeit: " << timeEnd.tv_usec - timeStart.tv_usec << std::endl;
+	
 	testmatrix3.print(argv[3]);
 	//testmatrix3.print();
-	int i = 0;
+	//int i = 0;
 	//while(std::cin >> i);
 return 0;
 }
