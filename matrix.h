@@ -24,7 +24,7 @@ class Matrix
    	double*createLinArray();
 	
 	public:
-	bool checkIfPowerOfTwo(size_t M, size_t N);
+	static bool checkIfPowerOfTwo(size_t M, size_t N);
 	size_t getNdim();
 	size_t getMdim();
 	Matrix (const int n,const int m);
@@ -37,6 +37,5 @@ class Matrix
 	void print(std::string filename);
 	Matrix& operator* (Matrix MatrixB);
 	static void matmult(Matrix & A, Matrix & B, Matrix & C);
-	static void matmul(const int M, const int N, const int K, double * A, const int lda, double * B, int ldb, double * C, int ldc);
 };
 #endif // MATRIX_H

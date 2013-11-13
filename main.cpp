@@ -6,58 +6,81 @@ extern "C" {
 }
 
 
-
-static void matmul(const int M, const int N, const int K, double * A, const int lda, double * B, int ldb, double * C, int ldc)
+//claimed function for calling the program, only due to the assignment tasks
+static void matrixmult(const int M, const int N, const int K, double * A, const int lda, double * B, int ldb, double * C, int ldc)
 {
+		
 	Matrix MatrixA(M,K,A,lda);
 	Matrix MatrixB(K,N,B,ldb);
-	Matrix MatrixC(K,N,C,ldc);
+	Matrix MatrixC(M,N);
+	
 		
-	Matrix::matmult(MatrixA,MatrixB,MatrixC);
+	if(Matrix::checkIfPowerOfTwo(M,K))
+	{	
+		if(Matrix::checkIfPowerOfTwo(K,N))
+		{
+			Matrix::matmult(MatrixA,MatrixB,MatrixC);
+		}
+	}
+	else
+	{
+		MatrixC = MatrixA*MatrixB;
+	}
 	for(size_t i = 0; i< MatrixC.getMdim() ; ++i)
 	{	
 		for(size_t j = 0; j<MatrixC.getNdim() ; ++j)
 		{
-			C[i*ldc+j] = MatrixC.getValueAt(i,j);
+			C[i*ldc + j] = MatrixC.getValueAt(i,j);
 		}
 	}
 }
 
 int main(int argc, char *argv[]){
-
+	
 	if(argc != 4){
 		std::cerr << "4 arguments required" << std::endl;
 		return -1;
 	}
 
-			
-			
-	//read input matrices	
-	Matrix inputMatrix(argv[1]);
-	Matrix inputMatrix1(argv[2]);
-	Matrix testmatrix2(inputMatrix.getMdim(),inputMatrix1.getNdim());
-	Matrix testmatrix3(inputMatrix.getMdim(),inputMatrix1.getNdim());
+	//reading in A
+	std::ifstream inputFileA(argv[1], std::ios::in);
+
+	int ndimA;
+	int mdimA;
+        inputFileA >> mdimA;
+	inputFileA >> ndimA;
+	int size = ndimA*mdimA;
+        double * dataA = new double[size];
+        for(int i = 0;i < size;)
+        {
+            inputFileA >> dataA[i++];
+        }
 	
-	//call strassen + time check
-	timeval timeStart, timeEnd;
-	gettimeofday(&timeStart, 0);
+	//reading in B
+	std::ifstream inputFileB(argv[2], std::ios::in);
+        int ndimB;
+        int mdimB;
+        inputFileB >> mdimB;
+	inputFileB >> ndimB;
+	size = ndimB*mdimB;
 
-	likwid_markerInit();
-	likwid_markerStartRegion("_matmult");
+        double * dataB = new double[size];
+        for(int i = 0;i < size;)
+        {
+            inputFileB >> dataB[i++];
+        }
+	size = mdimA*ndimB;
+	double * dataC = new double[size];	
 
-	Matrix::matmult(inputMatrix,inputMatrix1,testmatrix3);
-	//testmatrix3 = inputMatrix * inputMatrix1;
-
-	likwid_markerStopRegion("_matmult");
-	likwid_markerClose();
-
-	gettimeofday(&timeEnd, 0);
-	//output 
-	std::cout << "Laufzeit: " << timeEnd.tv_sec - timeStart.tv_sec << "," << timeEnd.tv_usec - timeStart.tv_usec << std::endl;	     testmatrix3.print(argv[3]);
-	//testmatrix3.print();
-	//int i = 0;
-	//while(std::cin >> i);
-return 0;
+	matrixmult(mdimA,ndimB,ndimA,dataA,ndimA,dataB,ndimB,dataC,ndimB);
+	//writing C	
+	std::ofstream outputFile(argv[3], std::ios::out);
+	outputFile << mdimA <<  " " << ndimB << std::endl;
+        for(int i = 0; i < size; ++i)
+        {
+                outputFile << dataC[i] << std::endl;
+        }	
+	
+	return 0;
 }
-
 
