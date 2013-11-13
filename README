@@ -1,0 +1,7 @@
+Usage: inputMatrix1 inputMatrix2 OutputMatrix [ -q | -w | -e ]
+
+Options (Optimizations):
+-q : only SSE 
+-w : only Cache-Blocking
+-e : no Optimizations
+(default : SSE and Cache-Blocking)
