@@ -13,21 +13,28 @@ return mdim;
 Matrix::Matrix(const int n,const int m)
 	{
 	//static int count = 0;
-        ndim=n;
-        mdim=m;
+	ndim = static_cast<size_t>(n);
+	mdim = static_cast<size_t>(m);
         size=n*m; 
         dataPointer = createLinArray();
 	//std::cout << count << std::endl;
 	//count++;
     }
 
-Matrix::Matrix(const int n, const int m, double * datapointer)
+Matrix::Matrix(const int n, const int m, double * datapointer,const int  ld)
 	{
-        ndim=n;
-        mdim=m;
+	ndim = static_cast<size_t>(n);
+	mdim = static_cast<size_t>(m);
         size=n*m; 
-        ;
-    }
+        dataPointer = createLinArray(); 
+	for(int i = 0;i < m; i++)
+		{
+		for(int j = 0 ;j < n; j++)
+			{
+				dataPointer[i*ndim + j] = datapointer[i*ld + j];	
+			}
+		}	
+	}
 
 
 Matrix::Matrix(std::string filename)
@@ -38,11 +45,11 @@ Matrix::Matrix(std::string filename)
         int ntmp;
         int mtmp;
 
-		inputFile >> mtmp;
+	inputFile >> mtmp;
         inputFile >> ntmp;
-		ndim = static_cast<size_t>(ntmp);
-		mdim = static_cast<size_t>(mtmp);
-		size=ndim*mdim;
+	ndim = static_cast<size_t>(ntmp);
+	mdim = static_cast<size_t>(mtmp);
+	size=ndim*mdim;
         /* extract matrix dimensions
         int space = dimensions.find(" ");
         std::string nDimString = dimensions.substr(0,space);
@@ -170,12 +177,21 @@ Matrix::Matrix(std::string filename)
 	}
 
 	
-	void matmul(const int M, const int N, const int K, double * A, const int lda, double * B, int ldb, double * C, int c)
+	void Matrix::matmul(const int M, const int N, const int K, double * A, const int lda, double * B, int ldb, double * C, int ldc)
 	{
-		
 
-
-	
+		Matrix MatrixA(M,K,A,lda);
+		Matrix MatrixB(K,N,B,ldb);
+		Matrix MatrixC(K,N,C,ldc);
+			
+		matmult(MatrixA,MatrixB,MatrixC);
+		for(size_t i = 0; i< MatrixC.mdim ; ++i)
+		{	
+			for(size_t j = 0; j<MatrixC.ndim ; ++j)
+			{
+				C[i*ldc+j] = MatrixC.dataPointer[i*MatrixC.ndim +j];
+			}
+		}
 	}
 	
 	

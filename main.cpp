@@ -1,9 +1,9 @@
 #include "matrix.h"
 #include <sys/time.h>
 
-extern "C" {
+/*extern "C" {
 	#include <likwid.h>
-}
+}*/
 
 int main(int argc, char *argv[]){
 
@@ -28,10 +28,8 @@ int main(int argc, char *argv[]){
 	Matrix::matmult(inputMatrix,inputMatrix1,testmatrix3);
 	//testmatrix3 = inputMatrix * inputMatrix1;
 	gettimeofday(&timeEnd, 0);
-	
 	//output 
-	std::cout << "Laufzeit: " << timeEnd.tv_sec - timeStart.tv_sec << "," << timeEnd.tv_usec - timeStart.tv_usec << std::endl;	
-	testmatrix3.print(argv[3]);
+	std::cout << "Laufzeit: " << timeEnd.tv_sec - timeStart.tv_sec << "," << timeEnd.tv_usec - timeStart.tv_usec << std::endl;	     testmatrix3.print(argv[3]);
 	//testmatrix3.print();
 	//int i = 0;
 	//while(std::cin >> i);
