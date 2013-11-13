@@ -16,7 +16,7 @@ Matrix::Matrix(const int n, const int m, double * datapointer)
         ndim=n;
         mdim=m;
         size=n*m; 
-        dataPointer = datapointer;
+        ;
     }
 
 
@@ -159,34 +159,15 @@ Matrix::Matrix(std::string filename)
 		}
 	}
 
-	/*
+	
 	void matmul(const int M, const int N, const int K, double * A, const int lda, double * B, int ldb, double * C, int c)
 	{
 		
-		vector<Matrix &> subMatB;
-		vector<Matrix &> subMatB;
-		subMatA = split(A);
-		subMatB = split(B);
-	
-		if( M < 9 && N < 9  )
-		{
-			{
-				for(size_t i = 0; i < M ; ++i)
-	               		 {
-	               		         for(size_t j = 0; j < N; ++j)
-	               		         {
-	                	                double rowSum = 0;
-	             	  	                for(size_t rowi = 0; rowi < ndim; ++rowi)
-	                               	 {
-	                                        rowSum += (dataPointer[i*ndim + rowi] * MatrixB.dataPointer[j + rowi * MatrixB.ndim]);
-	                                }
-	                                MatrixC->dataPointer[i*MatrixC->ndim + j] = rowSum;
-	                        }
-	                }
-		}
+
+
 	
 	}
-	*/
+	
 	void Matrix::matmult(Matrix& A, Matrix& B, Matrix& C)
 	{
 		if( A.ndim < 16  && B.ndim < 16  )
