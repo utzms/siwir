@@ -10,6 +10,19 @@ size_t Matrix::getMdim()
 return mdim;
 }
 
+bool Matrix::checkIfPowerOfTwo(size_t M, size_t N)
+{
+size_t i = 2;
+while(i < M || i < N)
+	{
+		if(M == i && N == i)
+			return true;
+		i*=2;
+	}	
+return false;
+}
+
+
 Matrix::Matrix(const int n,const int m)
 	{
 	//static int count = 0;
@@ -74,8 +87,13 @@ Matrix::Matrix(std::string filename)
 		}
 		dataPointer[m*ndim + n] = value;
 	}
+	
+	double Matrix::getValueAt(size_t i, size_t j)
+	{
+		return dataPointer[i*ndim + j];
+	}
 
-	double* Matrix::createLinArray()
+double* Matrix::createLinArray()
     {
 
         double* linArray = new double[size];
@@ -185,7 +203,8 @@ Matrix::Matrix(std::string filename)
 		Matrix MatrixC(K,N,C,ldc);
 			
 		matmult(MatrixA,MatrixB,MatrixC);
-		for(size_t i = 0; i< MatrixC.mdim ; ++i)
+	
+	for(size_t i = 0; i< MatrixC.mdim ; ++i)
 		{	
 			for(size_t j = 0; j<MatrixC.ndim ; ++j)
 			{
@@ -199,7 +218,7 @@ Matrix::Matrix(std::string filename)
 	void Matrix::matmult(Matrix& A, Matrix& B, Matrix& C)
 	{
 
-		if( A.ndim <= 1024 && B.ndim <= 1024)
+		if( A.ndim < 128 && B.ndim < 128)
 	//	if( A.ndim < 16  && B.ndim < 16  )
 		{
 			int blocksize= 8;

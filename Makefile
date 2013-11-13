@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -O3 -Wall -Winline -Wshadow -ansi -g -pthread
+CXXFLAGS = -O3 -Wall -Winline -Wshadow -ansi -g -pthread -msse3
 TARGET = matmult
 INC =  -I/usr/local/likwid-3.0/include/
 LDFLAGS = -L/usr/local/likwid-3.0/lib/

@@ -5,6 +5,24 @@
 	#include <likwid.h>
 }*/
 
+
+
+static void matmul(const int M, const int N, const int K, double * A, const int lda, double * B, int ldb, double * C, int ldc)
+{
+	Matrix MatrixA(M,K,A,lda);
+	Matrix MatrixB(K,N,B,ldb);
+	Matrix MatrixC(K,N,C,ldc);
+		
+	Matrix::matmult(MatrixA,MatrixB,MatrixC);
+	for(size_t i = 0; i< MatrixC.getMdim() ; ++i)
+	{	
+		for(size_t j = 0; j<MatrixC.getNdim() ; ++j)
+		{
+			C[i*ldc+j] = MatrixC.getValueAt(i,j);
+		}
+	}
+}
+
 int main(int argc, char *argv[]){
 
 	if(argc != 4){
@@ -12,6 +30,8 @@ int main(int argc, char *argv[]){
 		return -1;
 	}
 
+			
+			
 	//read input matrices	
 	Matrix inputMatrix(argv[1]);
 	Matrix inputMatrix1(argv[2]);
@@ -35,3 +55,5 @@ int main(int argc, char *argv[]){
 	//while(std::cin >> i);
 return 0;
 }
+
+
