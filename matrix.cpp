@@ -1,5 +1,6 @@
 #include "matrix.h"
 
+
 size_t Matrix::getNdim()
 {
 return ndim;
@@ -217,8 +218,13 @@ double* Matrix::createLinArray()
 
 	void Matrix::matmult(Matrix& A, Matrix& B, Matrix& C)
 	{
+		bool _sse_ON = false;// TURN SSE ON/OFF
+		
+		__m128d _vec_1, _vec_2, _vec_3 ;
+		double _vec_store[2] = {0.0, 0.0};
+		
 
-		if( A.ndim < 128 && B.ndim < 128)
+		if( A.ndim <= 1024 && B.ndim <= 1024)
 	//	if( A.ndim < 16  && B.ndim < 16  )
 		{
 			int blocksize= 8;
@@ -240,10 +246,24 @@ double* Matrix::createLinArray()
                                                 		double rowSum = 0;
                                                         	for(size_t rowi = 0; rowi < A.ndim; rowi+=blocksize)
                                                         	{
+									if(_sse_ON){	
 									//Opimization 1: Cache Blocking 
-						 			for(int k = 0; k < blocksize; ++k)
-									{	
-                                                        		        rowSum += (A.dataPointer[i*A.ndim + rowi + k] * Btrans.dataPointer[(j)*Btrans.ndim + rowi + k]);
+						 				for(int k = 0; k < blocksize;k += 2)
+										{	
+											
+										//Opimization 2: SSE Intrinsics
+											_vec_1 = _mm_loadu_pd( &A.dataPointer[i*A.ndim + rowi + k] );
+											_vec_2 = _mm_loadu_pd( &Btrans.dataPointer[(j)*Btrans.ndim + rowi + k] );
+											_vec_3 = _mm_mul_pd( _vec_1, _vec_2);
+											_mm_store_pd(_vec_store, _vec_3);
+											rowSum += _vec_store[0] + _vec_store[1];
+										}
+									}else{
+						 				for(int k = 0; k < blocksize;k += 1)
+										{	
+                                                        		      		rowSum += (A.dataPointer[i*A.ndim + rowi + k] * Btrans.dataPointer[(j)*Btrans.ndim + rowi + k]);
+										}
+
                                                        			}
                                                        		 	C.dataPointer[i*C.ndim + j]  = rowSum;
 								}
