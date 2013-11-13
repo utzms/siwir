@@ -1,5 +1,6 @@
 #include "matrix.h"
-
+extern bool _sse_ON;
+extern bool blocking;
 double Matrix::getValueAt(size_t i, size_t j)
 {
 	return dataPointer[i*ndim + j];
@@ -190,16 +191,16 @@ void Matrix::diffOf(Matrix & A, Matrix & B)
 
 void Matrix::matmult(Matrix& A, Matrix& B, Matrix& C)
 {
-	bool _sse_ON = true;// TURN SSE ON/OFF
+	//bool _sse_ON = false;// TURN SSE ON/OFF
 
 	__m128d _vec_1, _vec_2, _vec_3 ;
 	double _vec_store[2] = {0.0, 0.0};
 
-	//optimal threshold for using native multiplication:64
-	if( A.ndim < 64  && B.ndim < 64  )
+	//optimal threshold for using native multiplication:128
+	if( A.ndim < 128  && B.ndim < 128  )
 	{
-		int blocksize= 8;
-		bool blocking = true;
+		int blocksize=8;
+		//bool blocking = false;
 		if (blocking) {
 			Matrix Btrans(B.ndim,B.mdim);
 			//transpone Matrix B
