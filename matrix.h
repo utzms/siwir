@@ -19,8 +19,8 @@ class Matrix
 	
 
 	public:
-	inline size_t getNdim(){return ndim;}
-	inline size_t getMdim(){return mdim;}
+	size_t getNdim();
+	size_t getMdim();
 	Matrix (const int n,const int m);
 	Matrix (const int n,const int m,double * datapointer);
     	Matrix (std::string filename);

@@ -1,5 +1,15 @@
 #include "matrix.h"
 
+size_t Matrix::getNdim()
+{
+return ndim;
+}
+
+size_t Matrix::getMdim()
+{ 
+return mdim;
+}
+
 Matrix::Matrix(const int n,const int m)
 	{
 	//static int count = 0;
@@ -168,12 +178,45 @@ Matrix::Matrix(std::string filename)
 	
 	}
 	
+	
+
 	void Matrix::matmult(Matrix& A, Matrix& B, Matrix& C)
 	{
 		if( A.ndim < 16  && B.ndim < 16  )
 		{
-			for(size_t i = 0; i < A.mdim ; ++i)
+			bool blocking = true;
+			if (blocking) {
+			Matrix Btrans(B.ndim,B.mdim);
+			
+			for (size_t i = 0; i < B.ndim ; ++i)
+			{
+			std::cout << "---------- i: " << i << std::endl;
+				for (size_t j = 0; j < B.mdim ; ++j)
 				{
+				std::cout << B.dataPointer[j*B.ndim+i] << std::endl;
+				Btrans.dataPointer[i*B.ndim+j] = B.dataPointer[j*B.ndim+i];
+				std::cout << "xxxxxxx " << Btrans.dataPointer[j*B.ndim+i] << std::endl;
+								
+				}
+			}
+			for(size_t i = 0; i < A.mdim ; ++i)
+                        {       
+                                        for(size_t j = 0; j < B.ndim; ++j)
+                                                {
+                                                        double rowSum = 0;
+                                                        for(size_t rowi = 0; rowi < B.ndim; ++rowi)
+                                                        {
+                                                                rowSum += (A.dataPointer[i*A.ndim + rowi] * Btrans.dataPointer[j*Btrans.ndim +rowi]);
+                                                        }
+                                                        C.dataPointer[i*C.ndim + j] = rowSum;
+                                                }
+                                 }
+                        return;
+
+			}else{
+
+			for(size_t i = 0; i < A.mdim ; ++i)
+			{	
 					for(size_t j = 0; j < B.ndim; ++j)
 						{
 							double rowSum = 0;
@@ -185,6 +228,7 @@ Matrix::Matrix(std::string filename)
 						}
 				}
 			return;
+			}
 		}
 		size_t newDim = A.ndim*0.5;
 		std::vector<Matrix> subMatA;
