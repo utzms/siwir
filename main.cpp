@@ -1,5 +1,10 @@
 #include "matrix.h"
 #include <sys/time.h>
+
+extern "C" {
+	#include <likwid.h>
+}
+
 int main(int argc, char *argv[]){
 
 	if(argc != 4){
@@ -14,9 +19,14 @@ int main(int argc, char *argv[]){
 	Matrix testmatrix3(inputMatrix.getMdim(),inputMatrix1.getNdim());
 	
 	//call strassen + time check
-	timeval timeStart, timeEnd ;
+	timeval timeStart, timeEnd;
 	gettimeofday(&timeStart, 0);
+
+//	likwid_markerInit();
+//	likwid_markerStartRegion("_matmult");
+
 	Matrix::matmult(inputMatrix,inputMatrix1,testmatrix3);
+	//testmatrix3 = inputMatrix * inputMatrix1;
 	gettimeofday(&timeEnd, 0);
 	
 	//output 

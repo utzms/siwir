@@ -182,33 +182,36 @@ Matrix::Matrix(std::string filename)
 
 	void Matrix::matmult(Matrix& A, Matrix& B, Matrix& C)
 	{
-		if( A.ndim < 16  && B.ndim < 16  )
+
+		if( A.ndim <= 1024 && B.ndim <= 1024)
+	//	if( A.ndim < 16  && B.ndim < 16  )
 		{
+			int blocksize= 8;
 			bool blocking = true;
 			if (blocking) {
 			Matrix Btrans(B.ndim,B.mdim);
 			
 			for (size_t i = 0; i < B.ndim ; ++i)
 			{
-			std::cout << "---------- i: " << i << std::endl;
 				for (size_t j = 0; j < B.mdim ; ++j)
 				{
-				std::cout << B.dataPointer[j*B.ndim+i] << std::endl;
-				Btrans.dataPointer[i*B.ndim+j] = B.dataPointer[j*B.ndim+i];
-				std::cout << "xxxxxxx " << Btrans.dataPointer[j*B.ndim+i] << std::endl;
-								
+				Btrans.dataPointer[i*B.ndim+j] = B.dataPointer[j*B.ndim+i];	
 				}
 			}
 			for(size_t i = 0; i < A.mdim ; ++i)
                         {       
-                                        for(size_t j = 0; j < B.ndim; ++j)
+                                        for(size_t j = 0; j < B.ndim; j++)
                                                 {
-                                                        double rowSum = 0;
-                                                        for(size_t rowi = 0; rowi < B.ndim; ++rowi)
-                                                        {
-                                                                rowSum += (A.dataPointer[i*A.ndim + rowi] * Btrans.dataPointer[j*Btrans.ndim +rowi]);
-                                                        }
-                                                        C.dataPointer[i*C.ndim + j] = rowSum;
+                                                		double rowSum = 0;
+                                                        	for(size_t rowi = 0; rowi < A.ndim; rowi+=blocksize)
+                                                        	{
+									//Opimization 1: Cache Blocking 
+						 			for(int k = 0; k < blocksize; ++k)
+									{	
+                                                        		        rowSum += (A.dataPointer[i*A.ndim + rowi + k] * Btrans.dataPointer[(j)*Btrans.ndim + rowi + k]);
+                                                       			}
+                                                       		 	C.dataPointer[i*C.ndim + j]  = rowSum;
+								}
                                                 }
                                  }
                         return;
