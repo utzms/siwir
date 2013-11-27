@@ -5,6 +5,16 @@ Grid::Grid(int const x, int const y)
 	
 	nx = x;
 	ny = y;
+
+// SET CONSTANTS
+	double hx_sq = 4 /(nx*nx);
+	double hy_sq = 1 /(ny*ny);
+
+	stencil_up = -1/hy_sq;
+	stencil_down = stencil_up;
+	stencil_right = -1/hx_sq;
+	stencil_left = stencil_right;
+	stencil_center = 2/hx_sq + 2/hy_sq + 2*M_PI;
 	
 	int n = (int)((nx*ny)/2);
 	
@@ -141,4 +151,6 @@ double Grid::getValue(int x, int y)
 		return redValues[realIndex];
 	}	
 }
+
+
 

@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 #include <omp.h>
+#include <math.h>
 
 class Grid
 {
@@ -12,6 +13,13 @@ int nx;
 int ny;
 double * blackValues;
 double * redValues;
+
+double stencil_up;
+double stencil_down;
+double stencil_right;
+double stencil_left;
+double stencil_center;
+
 
 public:
 
