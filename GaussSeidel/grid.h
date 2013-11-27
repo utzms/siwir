@@ -8,14 +8,14 @@ class Grid
 {
 
 protected:
-size_t nx;
-size_t ny;
+int nx;
+int ny;
 double * blackValues;
 double * redValues;
 
 public:
 
-Grid(size_t x, size_t y);
+Grid(int const x, int const y);
 void writeToFile(std::string filename);
 
 int computeGaussSeidel(size_t iterations);

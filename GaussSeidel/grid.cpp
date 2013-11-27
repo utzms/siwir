@@ -1,12 +1,37 @@
 #include "grid.h"
 
-Grid::Grid(size_t x, size_t y)
+Grid::Grid(int const x, int const y)
 {
+	
+	nx = x;
+	ny = y;
+	
+	int n = (int)((nx*ny)/2);
+	
+	if( ((x*y)%2) != 0 )
+	{
+		blackValues = new double[n];
+		n++;		
+		redValues = new double[n];		
+	}
+	else
+	{
+		blackValues = new double[n];		
+		redValues = new double[n];		
+	}
 
 }
 
 inline int Grid::computeGaussSeidel(size_t iterations)
 {
+	for(int i = 0; i < nx; i++)
+	{
+		for(int j = j; j < ny; j++)
+		{
+			
+		}
+	}
+
 	return 0;
 }
 
