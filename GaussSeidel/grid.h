@@ -20,7 +20,6 @@ void writeToFile(std::string filename);
 
 int computeGaussSeidel(size_t iterations);
 int computeResidual();
-
+int getIndexRed( size_t row, size_t column );
+int getIndexBlack( size_t row, size_t column );
 };
-
-
