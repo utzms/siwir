@@ -24,14 +24,19 @@ Grid::Grid(int const x, int const y)
 
 inline int Grid::computeGaussSeidel(size_t iterations)
 {
+	/*
 	for(int i = 0; i < nx; i++)
 	{
 		for(int j = j; j < ny; j++)
 		{
-			
+			int redIndex = getIndexRed(i,j);
+			if(redIndex != -1)
+			{
+						
+			}
 		}
 	}
-
+	*/
 	return 0;
 }
 
@@ -110,4 +115,30 @@ int Grid::getIndexBlack( size_t row, size_t column )
 	return idx;
 }
 
+void Grid::setValue(int x, int y, double value)
+{
+	int realIndex = getIndexRed(x,y);
+	if( realIndex == -1)
+	{
+		realIndex = getIndexBlack(x,y);
+		blackValues[realIndex] = value;
+	}	
+	else
+	{
+		redValues[realIndex] = value;
+	}
+}
+double Grid::getValue(int x, int y)
+{
+	int realIndex = getIndexRed(x,y);
+	if( realIndex == -1)
+	{
+		realIndex = getIndexBlack(x,y);
+		return blackValues[realIndex];
+	}	
+	else
+	{
+		return redValues[realIndex];
+	}	
+}
 

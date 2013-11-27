@@ -22,4 +22,6 @@ int computeGaussSeidel(size_t iterations);
 int computeResidual();
 int getIndexRed( size_t row, size_t column );
 int getIndexBlack( size_t row, size_t column );
+void setValue(int x, int y, double value);
+double getValue(int x, int y);
 };
