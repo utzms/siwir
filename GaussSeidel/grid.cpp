@@ -16,6 +16,7 @@ Grid::Grid(int const x, int const y)
 	stencil_left = stencil_right;
 	stencil_center = 2/hx_sq + 2/hy_sq + 2*M_PI;
 	
+	//resultVectorX(ny);
 	int n = (int)((nx*ny)/2);
 	
 	if( ((x*y)%2) != 0 )
@@ -42,8 +43,13 @@ inline int Grid::computeGaussSeidel(size_t iterations)
 			int redIndex = getIndexRed(i,j);
 			if(redIndex != -1)
 			{
-						
-			}
+				//double aii = computeStencilBlack(i,j);			
+				//double aijSum;
+				for(int x = 0 ; x < i; x++){
+					//double aij  = computeStencilBlack(i,x);
+					//aijSum += aij*resultVectorX[i*nx + x]; 			
+				}
+			}	
 		}
 	}
 	

@@ -15,7 +15,7 @@ int ny;
 double * blackValues;
 double * redValues;
 Matrix * resultFxy;
-
+std::vector<double> resultVectorX;
 
 double stencil_up;
 double stencil_down;
@@ -35,4 +35,5 @@ int getIndexRed( size_t row, size_t column );
 int getIndexBlack( size_t row, size_t column );
 void setValue(int x, int y, double value);
 double getValue(int x, int y);
+double computeStencilBlack(int i, int j);
 };

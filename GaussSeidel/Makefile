@@ -13,8 +13,8 @@ $(TARGET): main.o grid.o
 main.o: main.cpp grid.h
 	$(CXX) $(CXXFLAGS) -c main.cpp grid.h  $(INC) $(LDFLAGS) $(LIBS)
 
-grid.o: grid.cpp grid.h
-	$(CXX) $(CXXFLAGS) -c grid.cpp grid.h  $(INC) $(LDFLAGS) $(LIBS)
+grid.o: grid.cpp grid.h matrix.h
+	$(CXX) $(CXXFLAGS) -c grid.cpp grid.h matrix.h  $(INC) $(LDFLAGS) $(LIBS)
 .PHONY: clean	
 
 clean:
