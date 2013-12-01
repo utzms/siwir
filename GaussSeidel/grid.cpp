@@ -3,20 +3,21 @@
 Grid::Grid(int const x, int const y)
 {
 	
-	nx = x;
-	ny = y;
+	nx = x + 1;
+	ny = y + 1;
 
 	// SET CONSTANTS
-	double hx_sq = 4 /(nx*nx);
-	double hy_sq = 1 /(ny*ny);
+	double hx_sq = 4 /(x*x);
+	double hy_sq = 1 /(y*y);
 
 	stencil_up = -1/hy_sq;
 	stencil_down = stencil_up;
-	stencil_right = -1/hx_sq;
+	stencil_right = -1/(hx_sq);
 	stencil_left = stencil_right;
-	stencil_center = 2/hx_sq + 2/hy_sq + 2*M_PI;
+	stencil_center = 1/(2/hx_sq + 2/hy_sq + 2*M_PI);
 	
-	//resultVectorX(ny);
+	solutionVectorX.reserve(nx*ny);
+	resultVectorFxy.resize(nx*ny);
 	int n = (int)((nx*ny)/2);
 	
 	if( ((x*y)%2) != 0 )
@@ -33,35 +34,54 @@ Grid::Grid(int const x, int const y)
 
 }
 
-inline int Grid::computeGaussSeidel(size_t iterations)
+int Grid::computeGaussSeidel(size_t iterations)
 {
 	
-	for(int i = 0; i < nx; i++)
+	
+	for(int i = 1; i < ny-1; i++)
 	{
-		for(int j = j; j < ny; j++)
+		for(int j = 1; j < nx-1; j++)
 		{
 			int redIndex = getIndexRed(i,j);
 			if(redIndex != -1)
 			{
-				//double aii = computeStencilBlack(i,j);			
-				//double aijSum;
-				for(int x = 0 ; x < i; x++){
-					//double aij  = computeStencilBlack(i,x);
-					//aijSum += aij*resultVectorX[i*nx + x]; 			
-				}
+				int indBlackDown = getIndexBlack(i-1,j); 
+				int indBlackUp   = getIndexBlack(i+1,j);
+				int indBlackRight= getIndexBlack(i,j-1);
+				int indBlackLeft = getIndexBlack(i,j+1);
+				redValues[redIndex] = stencil_center*(resultVectorFxy[i*(nx-1) + j] + stencil_right*(blackValues[indBlackRight] 
+				+ blackValues[indBlackLeft]) + stencil_up*(blackValues[indBlackUp] + blackValues[indBlackDown]));
 			}	
 		}
+	}
+
+	
+	for(int i = 1; i < ny-1; i++)
+	{
+		for(int j = 1; j < nx-1; j++)
+		{
+			int blackIndex = getIndexBlack(i,j);
+			if(blackIndex != -1)
+			{
+				int indRedDown = getIndexRed(i-1,j); 
+				int indRedUp   = getIndexRed(i+1,j);
+				int indRedRight= getIndexRed(i,j-1);
+				int indRedLeft = getIndexRed(i,j+1);
+				blackValues[blackIndex] = stencil_center*(resultVectorFxy[i*nx + j] + stencil_right*(redValues[indRedRight] 
+				+ redValues[indRedLeft]) + stencil_up*(redValues[indRedUp] + redValues[indRedDown]));
+			}	
+		}		
 	}
 	
 	return 0;
 }
 
-inline void Grid::writeToFile(std::string filename)
+void Grid::writeToFile(std::string filename)
 { 
 
 }
 
-inline int Grid::computeResidual()
+int Grid::computeResidual()
 {
 	return 0;
 }
@@ -149,7 +169,7 @@ double Grid::getValue(int x, int y)
 {
 	int realIndex = getIndexRed(x,y);
 	if( realIndex == -1)
-	{
+	{	
 		realIndex = getIndexBlack(x,y);
 		return blackValues[realIndex];
 	}	
@@ -161,13 +181,11 @@ double Grid::getValue(int x, int y)
 
 void Grid::fill_resultFxy()
 {
-	resultFxy = new Matrix((const int)nx,(const int)ny);
-
 	double tempValueFxy = 0;
-	for(int x = 0; x < nx; ++x){
-		for(int y = 0; x < ny; ++y) {
+	for( int y = 0; y < ny; ++y) {
+		for(int x = 0; x < nx; ++x){
 			tempValueFxy = 4 * M_PI * M_PI * sin(2*M_PI*x) * sinh(2*M_PI*y);
-			resultFxy->setValue(x,y,tempValueFxy);
+			resultVectorFxy.push_back(tempValueFxy);
 		}
 	}
 }
