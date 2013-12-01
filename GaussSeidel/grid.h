@@ -36,4 +36,6 @@ int getIndexBlack( size_t row, size_t column );
 void setValue(int x, int y, double value);
 double getValue(int x, int y);
 double computeStencilBlack(int i, int j);
+
+void fill_resultFxy();
 };
