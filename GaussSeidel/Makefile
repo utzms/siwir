@@ -7,14 +7,18 @@ INC =
 
 
 
-$(TARGET): main.o grid.o
+$(TARGET): main.o grid.o matrix.o
 	$(CXX) $(CXXFLAGS) -o $(TARGET) main.o grid.o  $(INC) $(LDFLAGS) $(LIBS)
 
-main.o: main.cpp grid.h
-	$(CXX) $(CXXFLAGS) -c main.cpp grid.h  $(INC) $(LDFLAGS) $(LIBS)
+main.o: main.cpp grid.h matrix.h
+	$(CXX) $(CXXFLAGS) -c main.cpp grid.hi matrix.h  $(INC) $(LDFLAGS) $(LIBS)
 
 grid.o: grid.cpp grid.h matrix.h
 	$(CXX) $(CXXFLAGS) -c grid.cpp grid.h matrix.h  $(INC) $(LDFLAGS) $(LIBS)
+ 
+matrix.o: matrix.cpp matrix.h
+	$(CXX) $(CXXFLAGS) -c matrix.cpp matrix.h  $(INC) $(LDFLAGS) $(LIBS)
+
 .PHONY: clean	
 
 clean:
