@@ -30,7 +30,7 @@ class Matrix
 	Matrix (const int n,const int m);
 	Matrix (const int n,const int m,double * datapointer, const int ld);
     	Matrix (std::string filename);
-	void setValue(size_t m, size_t n, double value);
+	void setValue(int m, int n, double value);
 	double getValueAt(size_t i, size_t j);
    	void setIdentity();
    	void print();

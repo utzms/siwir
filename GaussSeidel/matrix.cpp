@@ -16,7 +16,7 @@ size_t Matrix::getMdim()
 	return mdim;
 }
 
-void Matrix::setValue(size_t m, size_t n, double value)
+void Matrix::setValue(int m, int n, double value)
 {
 	if(m >= mdim || n >= ndim)
 	{

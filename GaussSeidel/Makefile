@@ -11,7 +11,7 @@ $(TARGET): main.o grid.o matrix.o
 	$(CXX) $(CXXFLAGS) -o $(TARGET) main.o grid.o  $(INC) $(LDFLAGS) $(LIBS)
 
 main.o: main.cpp grid.h matrix.h
-	$(CXX) $(CXXFLAGS) -c main.cpp grid.hi matrix.h  $(INC) $(LDFLAGS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -c main.cpp grid.h matrix.h  $(INC) $(LDFLAGS) $(LIBS)
 
 grid.o: grid.cpp grid.h matrix.h
 	$(CXX) $(CXXFLAGS) -c grid.cpp grid.h matrix.h  $(INC) $(LDFLAGS) $(LIBS)

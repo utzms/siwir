@@ -144,6 +144,7 @@ void Grid::setValue(int x, int y, double value)
 		redValues[realIndex] = value;
 	}
 }
+
 double Grid::getValue(int x, int y)
 {
 	int realIndex = getIndexRed(x,y);
@@ -157,6 +158,20 @@ double Grid::getValue(int x, int y)
 		return redValues[realIndex];
 	}	
 }
+
+void Grid::fill_resultFxy()
+{
+	resultFxy = new Matrix((const int)nx,(const int)ny);
+
+	double tempValueFxy = 0;
+	for(int x = 0; x < nx; ++x){
+		for(int y = 0; x < ny; ++y) {
+			tempValueFxy = 4 * M_PI * M_PI * sin(2*M_PI*x) * sinh(2*M_PI*y);
+			resultFxy->setValue(x,y,tempValueFxy);
+		}
+	}
+}
+
 
 
 
