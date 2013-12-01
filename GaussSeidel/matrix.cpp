@@ -1,6 +1,6 @@
 #include "matrix.h"
-extern bool _sse_ON;
-extern bool blocking;
+bool _sse_ON;
+bool blocking;
 double Matrix::getValueAt(size_t i, size_t j)
 {
 	return dataPointer[i*ndim + j];

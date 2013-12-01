@@ -8,7 +8,7 @@ INC =
 
 
 $(TARGET): main.o grid.o matrix.o
-	$(CXX) $(CXXFLAGS) -o $(TARGET) main.o grid.o  $(INC) $(LDFLAGS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) main.o grid.o matrix.o  $(INC) $(LDFLAGS) $(LIBS)
 
 main.o: main.cpp grid.h matrix.h
 	$(CXX) $(CXXFLAGS) -c main.cpp grid.h matrix.h  $(INC) $(LDFLAGS) $(LIBS)
