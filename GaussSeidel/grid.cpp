@@ -6,7 +6,7 @@ Grid::Grid(int const x, int const y)
 	nx = x;
 	ny = y;
 
-// SET CONSTANTS
+	// SET CONSTANTS
 	double hx_sq = 4 /(nx*nx);
 	double hy_sq = 1 /(ny*ny);
 
@@ -34,7 +34,7 @@ Grid::Grid(int const x, int const y)
 
 inline int Grid::computeGaussSeidel(size_t iterations)
 {
-	/*
+	
 	for(int i = 0; i < nx; i++)
 	{
 		for(int j = j; j < ny; j++)
@@ -46,7 +46,7 @@ inline int Grid::computeGaussSeidel(size_t iterations)
 			}
 		}
 	}
-	*/
+	
 	return 0;
 }
 

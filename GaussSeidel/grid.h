@@ -4,6 +4,7 @@
 #include <string>
 #include <omp.h>
 #include <math.h>
+#include "matrix.h"
 
 class Grid
 {
@@ -13,6 +14,8 @@ int nx;
 int ny;
 double * blackValues;
 double * redValues;
+Matrix * resultFxy;
+
 
 double stencil_up;
 double stencil_down;
