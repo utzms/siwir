@@ -12,13 +12,13 @@ Grid::Grid(int const x, int const y)
 	std::cout<< hx_sq <<" "<<  hy_sq << std::endl;	
 
 	stepSizeY = 1/(double)y;
-	stepSizeX = 2/(double)x; 
+	stepSizeX = 1/(double)x; 
 		
-	stencil_up = -1/hy_sq;
+	stencil_up = 1/hy_sq;
 	stencil_down = stencil_up;
-	stencil_right = -1/(hx_sq);
+	stencil_right = 1/(hx_sq);
 	stencil_left = stencil_right;
-	stencil_center = 1/(2/hx_sq + 2/hy_sq + 2*M_PI);
+	stencil_center = 1/(2/hx_sq + 2/hy_sq + 4*M_PI*M_PI);
 		
 	resultVectorFxy.reserve(x*y);
 	int n = (int)((nx*ny)/2);
@@ -72,7 +72,7 @@ int Grid::computeGaussSeidel(int iterations)
 					redValues[redIndex] = stencil_center*(resultVectorFxy[(i-1)*(nx-2) + (j-1)] + stencil_right*(blackValues[indBlackRight] 
 					+ blackValues[indBlackLeft]) + stencil_up*(blackValues[indBlackUp] + blackValues[indBlackDown]));
 				
-					//std::cout <<"rsv: "<< resultVectorFxy[(i-1)*(nx-2) + (j-1)] << std::endl;
+					std::cout <<"rsv: "<< (i-1)*(nx-2) + (j-1) << std::endl;
 				/*std::cout <<  blackValues[indBlackDown] << std::endl;
 				std::cout <<  blackValues[indBlackUp] << std::endl;
 				std::cout <<  blackValues[indBlackRight] << std::endl;
@@ -102,7 +102,7 @@ int Grid::computeGaussSeidel(int iterations)
 					blackValues[blackIndex] = stencil_center*(resultVectorFxy[(i-1)*(nx-2) + (j-1)] + stencil_right*(redValues[indRedRight] 
 					+ redValues[indRedLeft]) + stencil_up*(redValues[indRedUp] + redValues[indRedDown]));
 					
-					//std::cout <<"rsv: "<< resultVectorFxy[(i-1)*(nx-2) + (j-1)] << std::endl;
+					std::cout <<"rsv: "<< (i-1)*(nx-2) + (j-1) << std::endl;
 					/*std::cout <<  redValues[indRedDown] << std::endl;
 					std::cout <<  redValues[indRedUp] << std::endl;
 					std::cout <<  redValues[indRedRight] << std::endl;

@@ -4,8 +4,8 @@
 int main(int argc, char ** argv)
 {
         //cout << "!!!Version 0.01!!!" << endl;
-	int dim_x = 32;
-	int dim_y = 32;
+	int dim_x = 33;
+	int dim_y = 33;
 	Grid Grid(dim_y, dim_x);
 	 
 	for ( int x = 1; x < dim_x+1; ++x)
@@ -17,7 +17,7 @@ int main(int argc, char ** argv)
 //	Grid.print("BeispielTest.txt");
 	
 	Grid.fill_resultFxy();
-	Grid.computeGaussSeidel(1);	
+	Grid.computeGaussSeidel(200);	
 
 	for ( int i = 0;i < dim_y + 2; ++i)
 	{
