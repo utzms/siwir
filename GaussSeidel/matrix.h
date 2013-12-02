@@ -27,7 +27,7 @@ class Matrix
 	static bool checkIfPowerOfTwo(size_t M, size_t N);
 	size_t getNdim();
 	size_t getMdim();
-	Matrix (const int n,const int m);
+	Matrix (int n,int m);
 	Matrix (const int n,const int m,double * datapointer, const int ld);
     	Matrix (std::string filename);
 	void setValue(int m, int n, double value);

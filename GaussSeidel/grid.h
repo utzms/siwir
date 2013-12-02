@@ -17,6 +17,7 @@ double * blackValues;
 double * redValues;
 std::vector<double> resultVectorFxy;
 std::vector<double> solutionVectorX;
+std::vector<double> y1Vector;
 
 double stencil_up;
 double stencil_down;
@@ -37,4 +38,5 @@ void setValue(int x, int y, double value);
 double getValue(int x, int y);
 double computeStencilBlack(int i, int j); 
 void fill_resultFxy();
+void print(std::string filename);
 };

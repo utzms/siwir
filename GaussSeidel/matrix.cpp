@@ -64,7 +64,7 @@ void Matrix::print()
 	std::endl (std::cout);
 }
 
-Matrix::Matrix(const int m,const int n)
+Matrix::Matrix(int m,int n)
 {
 	ndim = static_cast<size_t>(n);
 	mdim = static_cast<size_t>(m);

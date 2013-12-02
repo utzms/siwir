@@ -202,6 +202,24 @@ void Grid::fill_resultFxy()
 
 }
 
+void Grid::print(std::string filename)
+{
+	//print to file named filename
+	std::ofstream outputFile(filename.c_str(), std::ios::out);
+	for(int x_out = 0; x_out < nx ; ++x_out)
+	{	
+		for(int y_out = 0; y_out < ny-1; ++y_out)
+		{
+			outputFile <<	(x_out) <<	"\t"	<<	(y_out) 
+				   <<	"\t"	<<	getValue(x_out, y_out) << std::endl;
+		}
+		outputFile << std::endl;
+		
+	}	
+	std::endl (outputFile);
+}
+
+
 
 
 

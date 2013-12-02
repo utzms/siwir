@@ -24,6 +24,7 @@ int main(int argc, char ** argv)
 		}
 	}
 
-		
+	Grid.print("BeispielTest.txt");
+
         return 0;
 }
