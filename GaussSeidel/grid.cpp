@@ -3,13 +3,16 @@
 Grid::Grid(int const x, int const y)
 {
 	
-	nx = x + 1;
-	ny = y + 1;
+	nx = x + 2;
+	ny = y + 2;
 
 	// SET CONSTANTS
 	double hx_sq = 4 /(x*x);
 	double hy_sq = 1 /(y*y);
-
+	
+	stepSizeY = 1/x;
+	stepSizeX = 2/y; 
+		
 	stencil_up = -1/hy_sq;
 	stencil_down = stencil_up;
 	stencil_right = -1/(hx_sq);
@@ -30,6 +33,14 @@ Grid::Grid(int const x, int const y)
 	{
 		blackValues = new double[n];		
 		redValues = new double[n];		
+	}
+
+	for(int i = 0; i < ny; ++i)
+	{
+		for(int j = 0; j < nx; ++j)
+		{
+			setValue(i,j,0.0);
+		}
 	}
 
 }
@@ -184,10 +195,11 @@ void Grid::fill_resultFxy()
 	double tempValueFxy = 0;
 	for( int y = 0; y < ny; ++y) {
 		for(int x = 0; x < nx; ++x){
-			tempValueFxy = 4 * M_PI * M_PI * sin(2*M_PI*x) * sinh(2*M_PI*y);
+			tempValueFxy = 4.0 * M_PI * M_PI * sin(2.0*M_PI*static_cast<double>(x)*stepSizeX) * sinh(2.0*M_PI*static_cast<double>(y)*stepSizeY);
 			resultVectorFxy.push_back(tempValueFxy);
 		}
 	}
+
 }
 
 

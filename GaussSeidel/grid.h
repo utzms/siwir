@@ -11,6 +11,8 @@ class Grid
 protected:
 int nx;
 int ny;
+double stepSizeX;
+double stepSizeY;
 double * blackValues;
 double * redValues;
 std::vector<double> resultVectorFxy;
