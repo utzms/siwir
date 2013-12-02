@@ -4,13 +4,13 @@
 int main(int argc, char ** argv)
 {
         //cout << "!!!Version 0.01!!!" << endl;
-	int dim_x = 33;
-	int dim_y = 33;
+	int dim_x = 64;
+	int dim_y = 64;
 	Grid Grid(dim_y, dim_x);
 	 
 	for ( int x = 1; x < dim_x+1; ++x)
 	{		
-		double initialValue = sin(2.0*M_PI*(double)x*(1.0/(double)dim_x))*sinh(2.0*M_PI);
+		double initialValue = sin(2.0*M_PI*(double)x*(2.0/(double)dim_x))*sinh(2.0*M_PI);
 		//std::cout << initialValue << std::endl;
 	 	Grid.setValue(dim_y+1,x,initialValue);
 	}
