@@ -1,5 +1,6 @@
 #include <cstdlib>
 #include <fstream>
+#include <iostream>
 #include <vector>
 #include <string>
 #include <omp.h>
@@ -30,7 +31,7 @@ public:
 Grid(int const x, int const y);
 void writeToFile(std::string filename);
 
-int computeGaussSeidel(size_t iterations);
+int computeGaussSeidel(int iterations);
 int computeResidual();
 int getIndexRed( size_t row, size_t column );
 int getIndexBlack( size_t row, size_t column );

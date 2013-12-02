@@ -7,20 +7,20 @@ Grid::Grid(int const x, int const y)
 	ny = y + 2;
 
 	// SET CONSTANTS
-	double hx_sq = 4 /(x*x);
-	double hy_sq = 1 /(y*y);
-	
-	stepSizeY = 1/x;
-	stepSizeX = 2/y; 
+	double hx_sq = 4 /static_cast<double>(x*x);
+	double hy_sq = 1 /static_cast<double>(y*y);
+	std::cout<< hx_sq <<" "<<  hy_sq << std::endl;	
+
+	stepSizeY = 1/(double)y;
+	stepSizeX = 2/(double)x; 
 		
 	stencil_up = -1/hy_sq;
 	stencil_down = stencil_up;
 	stencil_right = -1/(hx_sq);
 	stencil_left = stencil_right;
 	stencil_center = 1/(2/hx_sq + 2/hy_sq + 2*M_PI);
-	
-	solutionVectorX.reserve(nx*ny);
-	resultVectorFxy.resize(nx*ny);
+		
+	resultVectorFxy.reserve(x*y);
 	int n = (int)((nx*ny)/2);
 	
 	if( ((x*y)%2) != 0 )
@@ -45,45 +45,75 @@ Grid::Grid(int const x, int const y)
 
 }
 
-int Grid::computeGaussSeidel(size_t iterations)
+int Grid::computeGaussSeidel(int iterations)
 {
 	
-	
-	for(int i = 1; i < ny-1; i++)
-	{
-		for(int j = 1; j < nx-1; j++)
-		{
-			int redIndex = getIndexRed(i,j);
-			if(redIndex != -1)
-			{
-				int indBlackDown = getIndexBlack(i-1,j); 
-				int indBlackUp   = getIndexBlack(i+1,j);
-				int indBlackRight= getIndexBlack(i,j-1);
-				int indBlackLeft = getIndexBlack(i,j+1);
-				redValues[redIndex] = stencil_center*(resultVectorFxy[i*(nx-1) + j] + stencil_right*(blackValues[indBlackRight] 
-				+ blackValues[indBlackLeft]) + stencil_up*(blackValues[indBlackUp] + blackValues[indBlackDown]));
-			}	
-		}
-	}
 
-	
-	for(int i = 1; i < ny-1; i++)
-	{
-		for(int j = 1; j < nx-1; j++)
+	for(int iter = 0; iter < iterations; ++iter)
+	{	
+
+		for(int i = 1; i < ny-1; ++i)
 		{
-			int blackIndex = getIndexBlack(i,j);
-			if(blackIndex != -1)
+			for(int j = 1; j < nx-1; ++j)
 			{
-				int indRedDown = getIndexRed(i-1,j); 
-				int indRedUp   = getIndexRed(i+1,j);
-				int indRedRight= getIndexRed(i,j-1);
-				int indRedLeft = getIndexRed(i,j+1);
-				blackValues[blackIndex] = stencil_center*(resultVectorFxy[i*nx + j] + stencil_right*(redValues[indRedRight] 
-				+ redValues[indRedLeft]) + stencil_up*(redValues[indRedUp] + redValues[indRedDown]));
-			}	
-		}		
+				int redIndex = getIndexRed(i,j);
+				if(redIndex != -1)
+				{
+					//std::cout<< "red: " <<i<< " " <<j << std::endl;
+					
+					int indBlackDown = getIndexBlack(i-1,j); 
+					int indBlackUp   = getIndexBlack(i+1,j);
+					int indBlackRight= getIndexBlack(i,j+1);
+					int indBlackLeft = getIndexBlack(i,j-1);
+					//std::cout <<"    "<< indBlackUp << std::endl;
+					//std::cout << indBlackLeft << "\t"; 
+					//std::cout << indBlackRight << std::endl;
+					//std::cout <<"    " << indBlackDown << std::endl;
+					redValues[redIndex] = stencil_center*(resultVectorFxy[(i-1)*(nx-2) + (j-1)] + stencil_right*(blackValues[indBlackRight] 
+					+ blackValues[indBlackLeft]) + stencil_up*(blackValues[indBlackUp] + blackValues[indBlackDown]));
+				
+					//std::cout <<"rsv: "<< resultVectorFxy[(i-1)*(nx-2) + (j-1)] << std::endl;
+				/*std::cout <<  blackValues[indBlackDown] << std::endl;
+				std::cout <<  blackValues[indBlackUp] << std::endl;
+				std::cout <<  blackValues[indBlackRight] << std::endl;
+				std::cout <<  blackValues[indBlackLeft] << std::endl;
+				*/
+					//std::cout << redValues[redIndex] << std::endl;
+				}	
+			}
+		}
+		
+		for(int i = 1; i < ny-1; ++i)
+		{
+			for(int j = 1; j < nx-1; ++j)
+			{
+				int blackIndex = getIndexBlack(i,j);
+				if(blackIndex != -1)
+				{
+					//std::cout << "black: " <<i<< " " <<j << std::endl;
+					int indRedDown = getIndexRed(i-1,j); 
+					int indRedUp   = getIndexRed(i+1,j);
+					int indRedRight= getIndexRed(i,j+1);
+					int indRedLeft = getIndexRed(i,j-1);
+					//std::cout << "    "<< indRedUp << std::endl;
+					//std::cout << indRedLeft << "\t";
+					//std::cout << indRedRight << std::endl;
+					//std::cout <<"    "<< indRedDown << std::endl;
+					blackValues[blackIndex] = stencil_center*(resultVectorFxy[(i-1)*(nx-2) + (j-1)] + stencil_right*(redValues[indRedRight] 
+					+ redValues[indRedLeft]) + stencil_up*(redValues[indRedUp] + redValues[indRedDown]));
+					
+					//std::cout <<"rsv: "<< resultVectorFxy[(i-1)*(nx-2) + (j-1)] << std::endl;
+					/*std::cout <<  redValues[indRedDown] << std::endl;
+					std::cout <<  redValues[indRedUp] << std::endl;
+					std::cout <<  redValues[indRedRight] << std::endl;
+					std::cout <<  redValues[indRedLeft] << std::endl;
+					*/
+					//std::cout << blackValues[blackIndex] << std::endl;
+				}	
+			}		
+		}
+		
 	}
-	
 	return 0;
 }
 
@@ -193,13 +223,13 @@ double Grid::getValue(int x, int y)
 void Grid::fill_resultFxy()
 {
 	double tempValueFxy = 0;
-	for( int y = 0; y < ny; ++y) {
-		for(int x = 0; x < nx; ++x){
+	for( int y = 1; y < ny-1; ++y) {
+		for(int x = 1; x < nx-1; ++x){
 			tempValueFxy = 4.0 * M_PI * M_PI * sin(2.0*M_PI*static_cast<double>(x)*stepSizeX) * sinh(2.0*M_PI*static_cast<double>(y)*stepSizeY);
 			resultVectorFxy.push_back(tempValueFxy);
+			std::cout << resultVectorFxy[(y-1)*(nx-2) + (x-1)] << std::endl;
 		}
 	}
-
 }
 
 void Grid::print(std::string filename)

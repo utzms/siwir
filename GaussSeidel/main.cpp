@@ -3,9 +3,9 @@
 
 int main(int argc, char ** argv)
 {
-        //	cout << "!!!Version 0.01!!!" << endl;
-	int dim_x = 16;
-	int dim_y = 16;
+        //cout << "!!!Version 0.01!!!" << endl;
+	int dim_x = 32;
+	int dim_y = 32;
 	Grid Grid(dim_y, dim_x);
 	 
 	for ( int x = 1; x < dim_x+1; ++x)
@@ -14,13 +14,17 @@ int main(int argc, char ** argv)
 		//std::cout << initialValue << std::endl;
 	 	Grid.setValue(dim_y+1,x,initialValue);
 	}
+//	Grid.print("BeispielTest.txt");
+	
+	Grid.fill_resultFxy();
+	Grid.computeGaussSeidel(1);	
 
 	for ( int i = 0;i < dim_y + 2; ++i)
 	{
 		for (int j = 0; j < dim_x + 2; ++j)
 		{
 		//if ( Grid.getIndexBlack(i,j) != -1)
-			std::cout << Grid.getValue(i,j) << std::endl;
+		//std::cout << Grid.getValue(i,j) << std::endl;
 		}
 	}
 
