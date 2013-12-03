@@ -2,41 +2,56 @@
 #include <iostream>
 #include <sys/time.h>
 #include <omp.h>
+#include <string.h>
 int main(int argc, char ** argv)
 {
 
-	if(argc != 4)
+	//input handling
+	if(argc < 4 || argc > 5)
 	{
 		std::cout <<"Usage: ./rbgs gridDimensionX gridDimensionY Iterations" << std::endl;
 		return -1;
 	}
-        //cout << "!!!Version 0.01!!!" << endl;
+
 	int dim_x = atoi(argv[1]);
 	int dim_y = atoi(argv[2]);
 	int iterations = atoi(argv[3]);
+	std::string log("-log");
+	
 	omp_set_num_threads(32);	
-
+	
+	//create Grid and initialize result vector (Fxy)
 	Grid Grid(dim_y, dim_x);
-	 
+	Grid.fill_resultFxy();
+	
+	//initialize last row
 	for ( int x = 1; x < dim_x+1; ++x)
 	{		
 		double initialValue = sin(2.0*M_PI*(double)x*(2.0/(double)dim_x))*sinh(2.0*M_PI);
-		//std::cout << initialValue << std::endl;
 	 	Grid.setValue(dim_y+1,x,initialValue);
 	}
-//	Grid.print("BeispielTest.txt");
 	
-	Grid.fill_resultFxy();
+	
+	
+	//compute Gauss Seidel + time meassurement 
 	timeval start,end;	
-		
 	gettimeofday(&start,0);
 	Grid.computeGaussSeidel(iterations);	
 	gettimeofday(&end,0);
-	std::cout << "wall clock time: " << ((double)(end.tv_sec*1000000 + end.tv_usec)-(double)(start.tv_sec*1000000 + start.tv_usec))/1000000 << std::endl;
+	double time = ((double)(end.tv_sec*1000000 + end.tv_usec)-(double)(start.tv_sec*1000000 + start.tv_usec))/1000000;
 	
-	Grid.print("solution.txt");
-
+	//print wall clock time and residual
+	std::cout << "wall clock time: " << time << std::endl;
 	Grid.getResidual();		
+	
+	//log time if -log option set	
+	if( argc >= 5 && (log.compare(std::string(argv[4]))) == 0){
+		std::ofstream logFile("log.txt", std::ios::app);
+		logFile << time << std::endl;
+	}
+
+	// write solution to file
+	Grid.print("solution.txt");
 
         return 0;
 }

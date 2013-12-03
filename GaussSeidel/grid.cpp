@@ -242,14 +242,14 @@ void Grid::getResidual()
 	double l2_sum = 0;
 	double tmp_diff = 0;
 
-	for( int y = 1; y < ny-1; ++y) {
-		for(int x = 1; x < nx-1; ++x){
-			tmp_diff = (resultVectorFxy[(y-1)*(nx-2) + (x-1)])  -  getValue(y,x);  //TODO - Ax, hoch 2, summieren, sqrt 
+	for( int i = 1; i < ny-1; ++i) {
+		for(int j = 1; j < nx-1; ++j){
+			tmp_diff = (resultVectorFxy[(i-1)*(nx-2) + (j-1)])  -  getValue(i,j);  //TODO - Ax, hoch 2, summieren, sqrt 
 			l2_sum += (tmp_diff * tmp_diff);
 		}
 	}
 
-	std::cout << "--- residual : " << sqrt(tmp_diff) << std::endl;
+	std::cout << "residual: " << sqrt(tmp_diff) << std::endl;
 	
 }
 
