@@ -7,7 +7,7 @@ int main(int argc, char ** argv)
         //cout << "!!!Version 0.01!!!" << endl;
 	int dim_x = 2048;
 	int dim_y = 2048;
-	omp_set_num_threads(1);	
+	omp_set_num_threads(32);	
 
 	Grid Grid(dim_y, dim_x);
 	 
@@ -28,6 +28,8 @@ int main(int argc, char ** argv)
 	std::cout << "wall clock time: " << ((double)(end.tv_sec*1000000 + end.tv_usec)-(double)(start.tv_sec*1000000 + start.tv_usec))/1000000 << std::endl;
 	
 	Grid.print("BeispielTest.txt");
+
+	Grid.getResidual();		
 
         return 0;
 }

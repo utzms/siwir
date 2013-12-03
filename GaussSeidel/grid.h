@@ -41,4 +41,5 @@ double getValue(int x, int y);
 double computeStencilBlack(int i, int j); 
 void fill_resultFxy();
 void print(std::string filename);
+void getResidual();
 };

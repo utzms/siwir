@@ -71,8 +71,11 @@ int Grid::computeGaussSeidel(int iterations)
 					int indBlackRight= getIndexBlack(i,j+1);
 					int indBlackLeft = getIndexBlack(i,j-1);
 					
-					redValues[redIndex] = stencil_center*(resultVectorFxy[(i-1)*(nx-2) + (j-1)] + stencil_right*(blackValues[indBlackRight] 
-					+ blackValues[indBlackLeft]) + stencil_up*(blackValues[indBlackUp] + blackValues[indBlackDown]));
+					redValues[redIndex] = stencil_center*(resultVectorFxy[(i-1)*(nx-2) + (j-1)] 
+							    + stencil_right*(blackValues[indBlackRight] 
+							    + blackValues[indBlackLeft]) 
+							    + stencil_up*(blackValues[indBlackUp] 
+							    + blackValues[indBlackDown]));
 				
 				}	
 			}
@@ -233,7 +236,22 @@ void Grid::print(std::string filename)
 	std::endl (outputFile);
 }
 
+void Grid::getResidual()
+{
+	
+	double l2_sum = 0;
+	double tmp_diff = 0;
 
+	for( int y = 1; y < ny-1; ++y) {
+		for(int x = 1; x < nx-1; ++x){
+			tmp_diff = (resultVectorFxy[(x-1)*(nx-2) + (y-1)])  -  getValue(x,y);  //TODO - Ax, hoch 2, summieren, sqrt 
+			l2_sum += (tmp_diff * tmp_diff);
+		}
+	}
+
+	std::cout << "--- residual : " << sqrt(tmp_diff) << std::endl;
+	
+}
 
 
 
