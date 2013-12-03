@@ -29,6 +29,7 @@ double stencil_center;
 public:
 
 Grid(int const x, int const y);
+~Grid();
 void writeToFile(std::string filename);
 
 int computeGaussSeidel(int iterations);

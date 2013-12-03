@@ -1,5 +1,5 @@
 CX = g++
-CXXFLAGS = -O3 -Wall -Winline -Wshadow -ansi -g -pthread -msse3
+CXXFLAGS = -O3 -Wall -Winline -Wshadow -ansi -g -pthread -msse3 -fopenmp
 TARGET =  rbgs
 LDFLAGS = -L/usr/loca/
 INC = 
