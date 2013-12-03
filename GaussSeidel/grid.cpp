@@ -57,7 +57,7 @@ int Grid::computeGaussSeidel(int iterations)
 
 	for(int iter = 0; iter < iterations; ++iter)
 	{	
-		#pragma omp parallel for
+		#pragma omp parallel for schedule (dynamic)
 		for(int i = 1; i < ny-1; ++i)
 		{
 			for(int j = 1; j < nx-1; ++j)
@@ -81,7 +81,7 @@ int Grid::computeGaussSeidel(int iterations)
 			}
 		}
 		
-		#pragma omp parallel for
+		#pragma omp parallel for schedule (dynamic)
 		for(int i = 1; i < ny-1; ++i)
 		{
 			for(int j = 1; j < nx-1; ++j)
@@ -244,7 +244,7 @@ void Grid::getResidual()
 
 	for( int y = 1; y < ny-1; ++y) {
 		for(int x = 1; x < nx-1; ++x){
-			tmp_diff = (resultVectorFxy[(x-1)*(nx-2) + (y-1)])  -  getValue(x,y);  //TODO - Ax, hoch 2, summieren, sqrt 
+			tmp_diff = (resultVectorFxy[(y-1)*(nx-2) + (x-1)])  -  getValue(y,x);  //TODO - Ax, hoch 2, summieren, sqrt 
 			l2_sum += (tmp_diff * tmp_diff);
 		}
 	}
