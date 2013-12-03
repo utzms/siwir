@@ -22,7 +22,7 @@ Grid::Grid(int const x, int const y)
 	resultVectorFxy.reserve(x*y);
 	int n = (int)((nx*ny)/2);
 	
-	if( ((x*y)%2) != 0 )
+	if( ((x*y)&1) != 0 )
 	{
 		blackValues = new double[n];
 		n++;		
@@ -118,7 +118,7 @@ int Grid::getIndexRed( size_t row, size_t column )
 {
 	//wie viele Rote sind in Zeilen bis Indexzeile (ausgeschlossen)
 	int idx;
-	if ( nx % 2 == 0)
+	if ( (nx&1) == 0)
 	{
 		idx = 0.5*nx*(row)-1;
 	}
@@ -133,11 +133,11 @@ int Grid::getIndexRed( size_t row, size_t column )
 	//2 x o x o
 	//3 o x o x
 
-	if ((row%2) == 0 && column%2 == 0)
+	if ((row&1) == 0 && (column&1) == 0)
 	{
 		idx = idx + (int)(0.5*column)+1;
 	}
-	else if ( row%2 != 0 && column%2 !=0)
+	else if ( (row&1) != 0 && (column&1) !=0)
 	{
 		idx = idx + (int)(0.5*column+0.5);
 	}
@@ -153,7 +153,7 @@ int Grid::getIndexBlack( size_t row, size_t column )
 {
 	int idx;
 	//wie viele Rote sind in Zeilen bis Indexzeile (ausgeschlossen)
-	if ( nx % 2 == 0)
+	if ( (nx&1) == 0)
 	{
 		idx = 0.5*nx*(row)-1;
 	}
@@ -164,11 +164,11 @@ int Grid::getIndexBlack( size_t row, size_t column )
 		--idx;
 	}
 
-	if ((row%2 == 0 && column%2 != 0))
+	if (((row&1) == 0 && (column&1) != 0))
 	{
 		idx = idx + (int) (0.5*column+0.5);
 	}
-	else if ( row%2 != 0 && column%2 == 0)
+	else if ( (row&1) != 0 && (column&1) == 0)
 	{
 		idx = idx + (int) (0.5*column)+1;
 	}
