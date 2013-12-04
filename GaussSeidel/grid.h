@@ -17,14 +17,14 @@ double stepSizeY;
 double * blackValues;
 double * redValues;
 std::vector<double> resultVectorFxy;
-std::vector<double> solutionVectorX;
-std::vector<double> y1Vector;
 
 double stencil_up;
 double stencil_down;
 double stencil_right;
 double stencil_left;
 double stencil_center;
+double hx;
+double hy;
 
 public:
 

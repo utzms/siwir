@@ -3,23 +3,22 @@
 Grid::Grid(int const x, int const y)
 {
 	
-	nx = x + 2;
-	ny = y + 2;
+	nx = x + 1;
+	ny = y + 1;
 
 	// SET CONSTANTS
-	double hx_sq = 4 /static_cast<double>(x*x);
-	double hy_sq = 1 /static_cast<double>(y*y);
-
-	stepSizeY = 1/(double)y;
-	stepSizeX = 1/(double)x; 
-		
-	stencil_up = 1/hy_sq;
+	double hx_sq = 4.0 /static_cast<double>(x*x);
+	double hy_sq = 1.0 /static_cast<double>(y*y);
+	
+	hx = 2.0/static_cast<double>(x);
+	hy = 1.0/static_cast<double>(y);
+	 	
+	stencil_up = 1.0/hy_sq;
 	stencil_down = stencil_up;
-	stencil_right = 1/(hx_sq);
+	stencil_right = 1.0/(hx_sq);
 	stencil_left = stencil_right;
-	stencil_center = 1/(2/hx_sq + 2/hy_sq + 4*M_PI*M_PI);
+	stencil_center = 1.0/(2.0/hx_sq + 2.0/hy_sq + 4.0*M_PI*M_PI);
 		
-	resultVectorFxy.reserve(x*y);
 	int n = (int)((nx*ny)/2);
 	
 	if( ((x*y)&1) != 0 )
@@ -71,7 +70,7 @@ int Grid::computeGaussSeidel(int iterations)
 					int indBlackRight= getIndexBlack(i,j+1);
 					int indBlackLeft = getIndexBlack(i,j-1);
 					
-					redValues[redIndex] = stencil_center*(resultVectorFxy[(i-1)*(nx-2) + (j-1)] 
+					redValues[redIndex] = stencil_center*(resultVectorFxy[i*nx + j] 
 							    + stencil_right*(blackValues[indBlackRight] 
 							    + blackValues[indBlackLeft]) 
 							    + stencil_up*(blackValues[indBlackUp] 
@@ -94,8 +93,11 @@ int Grid::computeGaussSeidel(int iterations)
 					int indRedRight= getIndexRed(i,j+1);
 					int indRedLeft = getIndexRed(i,j-1);
 					
-					blackValues[blackIndex] = stencil_center*(resultVectorFxy[(i-1)*(nx-2) + (j-1)] + stencil_right*(redValues[indRedRight] 
-					+ redValues[indRedLeft]) + stencil_up*(redValues[indRedUp] + redValues[indRedDown]));					
+					blackValues[blackIndex] = stencil_center*(resultVectorFxy[i*nx + j] 
+								+ stencil_right*(redValues[indRedRight] 
+								+ redValues[indRedLeft]) 
+								+ stencil_up*(redValues[indRedUp] 
+								+ redValues[indRedDown]));					
 				}	
 			}		
 		}
@@ -104,15 +106,6 @@ int Grid::computeGaussSeidel(int iterations)
 	return 0;
 }
 
-void Grid::writeToFile(std::string filename)
-{ 
-
-}
-
-int Grid::computeResidual()
-{
-	return 0;
-}
 
 int Grid::getIndexRed( size_t row, size_t column )
 {
@@ -179,12 +172,12 @@ int Grid::getIndexBlack( size_t row, size_t column )
 	return idx;
 }
 
-void Grid::setValue(int x, int y, double value)
+void Grid::setValue(int i, int j, double value)
 {
-	int realIndex = getIndexRed(x,y);
+	int realIndex = getIndexRed(i,j);
 	if( realIndex == -1)
 	{
-		realIndex = getIndexBlack(x,y);
+		realIndex = getIndexBlack(i,j);
 		blackValues[realIndex] = value;
 	}	
 	else
@@ -193,12 +186,12 @@ void Grid::setValue(int x, int y, double value)
 	}
 }
 
-double Grid::getValue(int x, int y)
+double Grid::getValue(int i, int j)
 {
-	int realIndex = getIndexRed(x,y);
+	int realIndex = getIndexRed(i,j);
 	if( realIndex == -1)
 	{	
-		realIndex = getIndexBlack(x,y);
+		realIndex = getIndexBlack(i,j);
 		return blackValues[realIndex];
 	}	
 	else
@@ -210,9 +203,11 @@ double Grid::getValue(int x, int y)
 void Grid::fill_resultFxy()
 {
 	double tempValueFxy = 0;
-	for( int y = 1; y < ny-1; ++y) {
-		for(int x = 1; x < nx-1; ++x){
-			tempValueFxy = 4.0 * M_PI * M_PI * sin(2.0*M_PI*static_cast<double>(x)*stepSizeX) * sinh(2.0*M_PI*static_cast<double>(y)*stepSizeY);
+	for( int y = 0; y < ny; ++y) {
+		for(int x = 0; x < nx; ++x){
+			tempValueFxy 	= 4.0 * M_PI * M_PI 
+					* sin(2.0*M_PI*static_cast<double>(x)*hx) 
+					* sinh(2.0*M_PI*static_cast<double>(y)*hy);
 			resultVectorFxy.push_back(tempValueFxy);
 			//std::cout << resultVectorFxy[(y-1)*(nx-2) + (x-1)] << std::endl;
 		}
@@ -225,9 +220,9 @@ void Grid::print(std::string filename)
 	std::ofstream outputFile(filename.c_str(), std::ios::out);
 	for(int x_out = 0; x_out < nx ; ++x_out)
 	{	
-		for(int y_out = 0; y_out < ny-1; ++y_out)
+		for(int y_out = 0; y_out < ny; ++y_out)
 		{
-			outputFile <<	(x_out)*stepSizeX <<	"\t"	<<	(y_out)*stepSizeY 
+			outputFile <<	(x_out)*hx <<	"\t"	<<	(y_out)*hy 
 				   <<	"\t"	<<	getValue(x_out, y_out) << std::endl;
 		}
 		outputFile << std::endl;
@@ -239,19 +234,26 @@ void Grid::print(std::string filename)
 void Grid::getResidual()
 {
 	
-	double l2_sum = 0;
-	double tmp_diff = 0;
+	double l2_sum = 0.0;
+
+	double tmpAx = 0.0;
+	double tmp_diff = 0.0;
 
 	for( int i = 1; i < ny-1; ++i) {
 		for(int j = 1; j < nx-1; ++j){
-			tmp_diff = (resultVectorFxy[(i-1)*(nx-2) + (j-1)])  -  getValue(i,j);  //TODO - Ax, hoch 2, summieren, sqrt 
+			std::cout << "i,j: " << i << " " << j << std::endl;
+			tmpAx 	= (2.0/((hx*hx) + (2.0/hy*hy) + 4.0 * M_PI * M_PI))*getValue(i,j) 
+					+ (-1.0/(hy*hy))*getValue(i-1,j) 
+					+ (-1.0/(hy*hy))*getValue(i+1,j) 
+					+ (-1.0/(hx*hx))*getValue(i,j-1) 
+					+ (-1.0/(hx*hx))*getValue(i,j+1); 
+			tmp_diff = tmpAx - resultVectorFxy[ i * nx + j ];  
 			l2_sum += (tmp_diff * tmp_diff);
+			
 		}
 	}
 
-	std::cout << "residual: " << sqrt(tmp_diff) << std::endl;
-	
+	double residual =  sqrt( l2_sum *hx *hy  ); 
+
+	std::cout << "residual: " << residual  << std::endl;	
 }
-
-
-

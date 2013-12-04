@@ -21,14 +21,14 @@ int main(int argc, char ** argv)
 	omp_set_num_threads(32);	
 	
 	//create Grid and initialize result vector (Fxy)
-	Grid Grid(dim_y, dim_x);
+	Grid Grid(dim_x, dim_y);
 	Grid.fill_resultFxy();
 	
 	//initialize last row
-	for ( int x = 1; x < dim_x+1; ++x)
+	for ( int x = 0; x < dim_x+1; ++x)
 	{		
 		double initialValue = sin(2.0*M_PI*(double)x*(2.0/(double)dim_x))*sinh(2.0*M_PI);
-	 	Grid.setValue(dim_y+1,x,initialValue);
+	 	Grid.setValue(dim_y,x,initialValue);
 	}
 	
 	
