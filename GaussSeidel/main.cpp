@@ -18,7 +18,23 @@ int main(int argc, char ** argv)
 	int iterations = atoi(argv[3]);
 	std::string log("-log");
 	
-	omp_set_num_threads(32);	
+	int cpu = 0;
+	//omp_set_num_threads(32);
+	#pragma omp parallel
+
+	{
+		
+		
+
+		if (omp_get_thread_num()== 0)
+		{
+			cpu=omp_get_num_threads();
+			
+		}
+		
+	}
+	 
+		
 	
 	//create Grid and initialize result vector (Fxy)
 	Grid Grid(dim_x, dim_y);
@@ -46,8 +62,8 @@ int main(int argc, char ** argv)
 	
 	//log time if -log option set	
 	if( argc >= 5 && (log.compare(std::string(argv[4]))) == 0){
-		std::ofstream logFile("log.txt", std::ios::app);
-		logFile << time << std::endl;
+		std::ofstream logFile("log.csv",std::ios::out|std::ios::app);
+		logFile << argv[1] <<"," << cpu  << ","<< time << std::endl;
 	}
 
 	// write solution to file
