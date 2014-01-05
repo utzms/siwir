@@ -20,26 +20,6 @@ Grid::Grid(int const x, int const y)
 	stencil_right = 1.0/(hx_sq);
 	stencil_left = stencil_right;
 	stencil_center = 1.0/(2.0/hx_sq + 2.0/hy_sq + 4.0*M_PI*M_PI);
-		
-	//create and initialize Array for red/black values
-	int n = (int)((nx*ny)/2);
-	if( ((x*y)&1) != 0 )
-	{
-		blackValues = new double[n+1];		
-		redValues = new double[n+1];		
-	}
-	else
-	{
-		blackValues = new double[n];		
-		redValues = new double[n];		
-	}
-	for(int i = 0; i < ny; ++i)
-	{
-		for(int j = 0; j < nx; ++j)
-		{
-			setValue(i,j,0.0);
-		}
-	}
 
 }
 
@@ -107,101 +87,14 @@ int Grid::computeGaussSeidel(int iterations)
 	return 0;
 }
 
-
-int Grid::getIndexRed( size_t row, size_t column )
-{
-	//compute index inside red value array	
-	int idx;
-
-	//compute index by global row index
-	if ( (nx&1) == 0)
-	{
-		idx = 0.5*nx*(row)-1;
-	}
-	else
-	{
-		idx  = (int) (0.5*nx+0.5)*row;
-		idx -= (int) (0.5*(row));
-		--idx;
-	}
-	//0 x o x o
-	//1 o x o x
-	//2 x o x o
-	//3 o x o x
-	
-	//compute index by global column index
-	if ((row&1) == 0 && (column&1) == 0)
-	{
-		idx = idx + (int)(0.5*column)+1;
-	}
-	else if ( (row&1) != 0 && (column&1) !=0)
-	{
-		idx = idx + (int)(0.5*column+0.5);
-	}
-	else
-	{
-		return -1;
-	}
-
-	return idx;
-}
-
-int Grid::getIndexBlack( size_t row, size_t column )
-{
-	int idx;
-	//compute index inside red value array	
-	if ( (nx&1) == 0)
-	{
-		idx = 0.5*nx*(row)-1;
-	}
-	else
-	{
-		idx = (int) (0.5*nx+0.5)*row;
-		idx = idx - (int)(0.5*row+0.5);
-		--idx;
-	}
-
-	if (((row&1) == 0 && (column&1) != 0))
-	{
-		idx = idx + (int) (0.5*column+0.5);
-	}
-	else if ( (row&1) != 0 && (column&1) == 0)
-	{
-		idx = idx + (int) (0.5*column)+1;
-	}
-	else
-	{
-		return -1;
-	}
-	return idx;
-}
-
 void Grid::setValue(int i, int j, double value)
 {
-	int realIndex = getIndexRed(i,j);
-	if( realIndex == -1)
-	{
-		realIndex = getIndexBlack(i,j);
-		blackValues[realIndex] = value;
-	}	
-	else
-	{
-		redValues[realIndex] = value;
-	}
+
 }
 
 double Grid::getValue(int i, int j)
 {
-	int realIndex = getIndexRed(i,j);
-	if( realIndex == -1)
-	{	
-		realIndex = getIndexBlack(i,j);
-		return blackValues[realIndex];
-	}	
-	else
-	{
-		return redValues[realIndex];
-	}	
+
 }
 
 void Grid::fill_resultFxy()
@@ -213,7 +106,7 @@ void Grid::fill_resultFxy()
 			tempValueFxy 	= 4.0 * M_PI * M_PI 
 					* sin(2.0*M_PI*static_cast<double>(x)*hx) 
 					* sinh(2.0*M_PI*static_cast<double>(y)*hy);
-			resultVectorFxy.push_back(tempValueFxy);
+                    resultVectorFxy.push_back(tempValueFxy);
 		}
 	}
 }
@@ -232,7 +125,7 @@ void Grid::print(std::string filename)
 		outputFile << std::endl;
 		
 	}	
-	std::endl (outputFile);
+    std::endl (outputFile);
 }
 
 void Grid::getResidual()
