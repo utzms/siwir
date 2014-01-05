@@ -1,17 +1,19 @@
-#include "grid.h"
+#include "../include/grid.h"
 
 Grid::Grid(int const x, int const y)
 {
 	
+	//set gridsize
 	nx = x + 1;
 	ny = y + 1;
 
-	// SET CONSTANTS
-	double hx_sq = 4.0 /static_cast<double>(x*x);
-	double hy_sq = 1.0 /static_cast<double>(y*y);
-	
+	//set stepsize hx,hy
 	hx = 2.0/static_cast<double>(x);
 	hy = 1.0/static_cast<double>(y);
+	
+	//compute and set stencils for rbgs
+	double hx_sq = 4.0 /static_cast<double>(x*x);
+	double hy_sq = 1.0 /static_cast<double>(y*y);
 	 	
 	stencil_up = 1.0/hy_sq;
 	stencil_down = stencil_up;
@@ -19,20 +21,18 @@ Grid::Grid(int const x, int const y)
 	stencil_left = stencil_right;
 	stencil_center = 1.0/(2.0/hx_sq + 2.0/hy_sq + 4.0*M_PI*M_PI);
 		
+	//create and initialize Array for red/black values
 	int n = (int)((nx*ny)/2);
-	
 	if( ((x*y)&1) != 0 )
 	{
-		blackValues = new double[n];
-		n++;		
-		redValues = new double[n];		
+		blackValues = new double[n+1];		
+		redValues = new double[n+1];		
 	}
 	else
 	{
 		blackValues = new double[n];		
 		redValues = new double[n];		
 	}
-
 	for(int i = 0; i < ny; ++i)
 	{
 		for(int j = 0; j < nx; ++j)
@@ -47,15 +47,15 @@ Grid::~Grid()
 {
 delete[] blackValues;
 delete[] redValues;
-
 }
 
 int Grid::computeGaussSeidel(int iterations)
 {
 	
-
+	
 	for(int iter = 0; iter < iterations; ++iter)
 	{	
+		//compute red values
 		#pragma omp parallel for schedule (dynamic)
 		for(int i = 1; i < ny-1; ++i)
 		{
@@ -79,7 +79,8 @@ int Grid::computeGaussSeidel(int iterations)
 				}	
 			}
 		}
-		
+
+		//compute black values
 		#pragma omp parallel for schedule (dynamic)
 		for(int i = 1; i < ny-1; ++i)
 		{
@@ -109,8 +110,10 @@ int Grid::computeGaussSeidel(int iterations)
 
 int Grid::getIndexRed( size_t row, size_t column )
 {
-	//wie viele Rote sind in Zeilen bis Indexzeile (ausgeschlossen)
+	//compute index inside red value array	
 	int idx;
+
+	//compute index by global row index
 	if ( (nx&1) == 0)
 	{
 		idx = 0.5*nx*(row)-1;
@@ -125,7 +128,8 @@ int Grid::getIndexRed( size_t row, size_t column )
 	//1 o x o x
 	//2 x o x o
 	//3 o x o x
-
+	
+	//compute index by global column index
 	if ((row&1) == 0 && (column&1) == 0)
 	{
 		idx = idx + (int)(0.5*column)+1;
@@ -145,7 +149,7 @@ int Grid::getIndexRed( size_t row, size_t column )
 int Grid::getIndexBlack( size_t row, size_t column )
 {
 	int idx;
-	//wie viele Rote sind in Zeilen bis Indexzeile (ausgeschlossen)
+	//compute index inside red value array	
 	if ( (nx&1) == 0)
 	{
 		idx = 0.5*nx*(row)-1;
@@ -202,6 +206,7 @@ double Grid::getValue(int i, int j)
 
 void Grid::fill_resultFxy()
 {
+	//initialize result vector(right hand side) by given function
 	double tempValueFxy = 0;
 	for( int y = 0; y < ny; ++y) {
 		for(int x = 0; x < nx; ++x){
@@ -209,7 +214,6 @@ void Grid::fill_resultFxy()
 					* sin(2.0*M_PI*static_cast<double>(x)*hx) 
 					* sinh(2.0*M_PI*static_cast<double>(y)*hy);
 			resultVectorFxy.push_back(tempValueFxy);
-			//std::cout << resultVectorFxy[(y-1)*(nx-2) + (x-1)] << std::endl;
 		}
 	}
 }
@@ -218,9 +222,9 @@ void Grid::print(std::string filename)
 {
 	//print to file named filename
 	std::ofstream outputFile(filename.c_str(), std::ios::out);
-	for(int x_out = 0; x_out < nx ; ++x_out)
+	for(int x_out = 0; x_out < nx-1 ; ++x_out)
 	{	
-		for(int y_out = 0; y_out < ny; ++y_out)
+		for(int y_out = 0; y_out < ny-1 ; ++y_out)
 		{
 			outputFile <<	(x_out)*hx <<	"\t"	<<	(y_out)*hy 
 				   <<	"\t"	<<	getValue(x_out, y_out) << std::endl;
@@ -233,27 +237,22 @@ void Grid::print(std::string filename)
 
 void Grid::getResidual()
 {
-	
 	double l2_sum = 0.0;
-
 	double tmpAx = 0.0;
 	double tmp_diff = 0.0;
-
-	for( int i = 1; i < ny-1; ++i) {
+	
+	//compute and output residual
+	for(int i = 1; i < ny-1; ++i){
 		for(int j = 1; j < nx-1; ++j){
-			std::cout << "i,j: " << i << " " << j << std::endl;
-			tmpAx 	= (2.0/((hx*hx) + (2.0/hy*hy) + 4.0 * M_PI * M_PI))*getValue(i,j) 
+			tmpAx 	= (2.0/(hx*hx) + 2.0/(hy*hy) + 4.0 * M_PI * M_PI)*getValue(i,j) 
 					+ (-1.0/(hy*hy))*getValue(i-1,j) 
 					+ (-1.0/(hy*hy))*getValue(i+1,j) 
 					+ (-1.0/(hx*hx))*getValue(i,j-1) 
 					+ (-1.0/(hx*hx))*getValue(i,j+1); 
 			tmp_diff = tmpAx - resultVectorFxy[ i * nx + j ];  
 			l2_sum += (tmp_diff * tmp_diff);
-			
 		}
 	}
-
-	double residual =  sqrt( l2_sum *hx *hy  ); 
-
+	double residual =  sqrt( l2_sum * hx * hy  ); 
 	std::cout << "residual: " << residual  << std::endl;	
 }
