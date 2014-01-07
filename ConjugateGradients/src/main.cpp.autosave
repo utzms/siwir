@@ -52,6 +52,6 @@ int main(int argc, char ** argv)
 
 	// write solution to file
     Grid.print("solution.txt");
-    MPI_Finalize();
+
     return 0;
 }
