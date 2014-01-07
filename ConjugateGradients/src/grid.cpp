@@ -35,6 +35,7 @@ Grid::Grid(int const x, int const y, int s , int r)
     localVector_g.resize(localVectorSize_withGhosts);
     localVector_d.resize(localVectorSize_withGhosts);
     localVector_h.resize(localVectorSize_withGhosts);
+    local_grid.resize(localVectorSize_withGhosts);
 
 }
 
@@ -48,15 +49,15 @@ int Grid::computeConjugateGradients(int iterations, double epsilon)
 
     initAndSplit(epsilon);
     //initialize vector d
-    for ( int i = 0; i < nx * ny; ++i)
+    for ( int i = nx; i < localVectorSize; ++i)
     {
-    //    localVector_d[i] = -(localVector_g[i]);
+        localVector_d[i] = -(localVector_g[i]);
     }
 
 	for(int iter = 0; iter < iterations; ++iter)
     {
 
-//        sendAndReceive_ghosts();
+          sendAndReceive_ghosts();
 
 //        //h = Ad
 //        for(int i = 1; i < ny-1; ++i)
@@ -88,8 +89,10 @@ int Grid::computeConjugateGradients(int iterations, double epsilon)
 //        }
 
 //        //delta1 = <g,g>
-//        double delta_new = computeDotProduct(localVector_g,localVector_g);
-
+//        double delta_part = computeDotProduct(localVector_g,localVector_g);
+//	  double delta_new  = 0.0;
+//	  MPI_AllReduce( &delta_part, &delta_new, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
+		
 //        if(delta_new <= epsilon)
 //        {
 //            return 0;
@@ -105,8 +108,8 @@ int Grid::computeConjugateGradients(int iterations, double epsilon)
 //        delta = delta_new;
     }
 
-//    MPI_Gather((double *)&local_grid[0], localVectorSize, MPI_DOUBLE, (double *)&grid[0],localVectorSize,
-//               MPI_DOUBLE, 0, MPI_COMM_WORLD );
+	 MPI_Gather((double *)&local_grid[nx], localVectorSize, MPI_DOUBLE, (double *)&grid[0],localVectorSize,
+	         MPI_DOUBLE, 0, MPI_COMM_WORLD );
     return 0;
 }
 
@@ -136,20 +139,20 @@ void Grid::initAndSplit(double epsilon)
         //send partial vecors
            for(int currentNode = 1; currentNode < size ; currentNode++)
            {
-               MPI_Send((double *)(&grid[currentNode * localVectorSize - nx]), localVectorSize, MPI_DOUBLE
+               MPI_Send((double *)(&vector_g[currentNode * localVectorSize - nx]), localVectorSize_withGhosts, MPI_DOUBLE
                           ,currentNode, 0, MPI_COMM_WORLD);
            }
 
            for(int currentNode = 1; currentNode < size ; currentNode++)
            {
-               MPI_Send((double *)(&vector_g[currentNode * localVectorSize - nx]), localVectorSize, MPI_DOUBLE
+               MPI_Send((double *)(&grid[currentNode * localVectorSize - nx]), localVectorSize_withGhosts, MPI_DOUBLE
                           ,currentNode, 0, MPI_COMM_WORLD);
            }
 
            double result = 0.0;
            for ( int i = 0; i < nx * ny; ++i)
            {
-           // result += vector_g[i]*vector_g[i];
+           	 result += vector_g[i]*vector_g[i];
            }
            delta = result;
 
@@ -161,10 +164,11 @@ void Grid::initAndSplit(double epsilon)
     else
     {
         MPI_Status status;
-        MPI_Recv( (double *)&localVector_g[0],localVectorSize ,MPI_DOUBLE,
+        MPI_Recv( (double *)&localVector_g[0],localVectorSize_withGhosts ,MPI_DOUBLE,
                   0, 0 , MPI_COMM_WORLD, &status );
-        MPI_Recv( (double *)&local_grid[0] , localVectorSize ,MPI_DOUBLE,
+        MPI_Recv( (double *)&local_grid[0] , localVectorSize_withGhosts ,MPI_DOUBLE,
                   0, 0 , MPI_COMM_WORLD, &status );
+	std::cout << rank << std::endl;
     }
 
 
@@ -172,12 +176,38 @@ void Grid::initAndSplit(double epsilon)
 
 void Grid::sendAndReceive_ghosts()
 {
+	MPI_Request request[2];
+	MPI_Status status[2];
+	MPI_Status send_status;
+	
+	if(rank != 0)
+	{
+		MPI_Issend((double *)(&localVector_d[0]), nx, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD , &request[0]);
+	}
+	
+	
+	if(rank != size-1)
+	{
+		MPI_Issend((double *)(&localVector_d[localVectorSize]), nx, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD , &request[1]);
+        }
+	
+	if(rank != size-1) 
+	{
+		MPI_Recv( (double *)&localVector_d[localVectorSize] , nx ,MPI_DOUBLE, rank+1, 0 , MPI_COMM_WORLD, &send_status );
+	}
+        
+	if(rank != 0)
+	{
+		MPI_Recv( (double *)&localVector_d[0] , nx ,MPI_DOUBLE, rank-1, 0 , MPI_COMM_WORLD, &send_status );
+	}
+	
+	if(rank != 0)
+		MPI_Wait(&request[0], &status[0]);
+	
+	if(rank != size-1)
+		MPI_Wait(&request[1], &status[1]);
 }
 
-void Grid::gatherLocalGrids()
-{
-
-}
 
 //<------------MPI FUNCTIONS
 void Grid::setValue(std::vector<double> & vector,int i, int j, double value)
