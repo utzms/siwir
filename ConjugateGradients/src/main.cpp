@@ -36,13 +36,13 @@ int main(int argc, char ** argv)
 	//compute Gauss Seidel + time meassurement 
 	timeval start,end;	
 	gettimeofday(&start,0);
-    Grid.computeConjugateGradients(iterations,epsilon);
+    	Grid.computeConjugateGradients(iterations,epsilon);
 	gettimeofday(&end,0);
 	double time = ((double)(end.tv_sec*1000000 + end.tv_usec)-(double)(start.tv_sec*1000000 + start.tv_usec))/1000000;
 	
 	//print wall clock time and residual
-	std::cout << "wall clock time: " << time << std::endl;
-    //Grid.getResidual();
+	std::cout <<"rank: " << rank<< " wall clock time: " << time << std::endl;
+    	//Grid.getResidual();
 	
 	//log time if -log option set	
 	if( argc >= 5 && (log.compare(std::string(argv[4]))) == 0){
@@ -51,8 +51,11 @@ int main(int argc, char ** argv)
 	}
 
 	// write solution to file
-    if(rank == 0)
-        Grid.print("solution.txt");
+   	if(rank == 0)
+	{
+		std::cout << "print->" << std::endl;
+       	 	Grid.print("solution.txt");
+    	}
 
     MPI_Finalize();
     return 0;

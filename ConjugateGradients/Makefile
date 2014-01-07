@@ -1,5 +1,5 @@
 CXX = mpiCC
-CXXFLAGS = -O3 -Wall -Winline -Wshadow -ansi
+CXXFLAGS = -O3 -Wall -Winline -Wshadow -ansi -g
 TARGET =  cg
 INC = 
 INCPATH=./include/

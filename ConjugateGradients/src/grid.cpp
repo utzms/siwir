@@ -50,7 +50,7 @@ int Grid::computeConjugateGradients(int iterations, double epsilon)
     //initialize vector d
     for ( int i = 0; i < nx * ny; ++i)
     {
-        localVector_d[i] = -(localVector_g[i]);
+    //    localVector_d[i] = -(localVector_g[i]);
     }
 
 	for(int iter = 0; iter < iterations; ++iter)
@@ -117,9 +117,9 @@ void Grid::initAndSplit(double epsilon)
     if(rank == 0)
     {
         //init resultVector_Fxy
-           fill_resultFxy();
+	  fill_resultFxy();
         //init g
-           getResidualVector(vector_g);
+     	  getResidualVector(vector_g);
         //init grid
           for ( int i = 0; i < nx * ny; ++i)
           {
@@ -136,20 +136,20 @@ void Grid::initAndSplit(double epsilon)
         //send partial vecors
            for(int currentNode = 1; currentNode < size ; currentNode++)
            {
-//               MPI_Send((double *)(&grid[currentNode * localVectorSize - nx]), localVectorSize, MPI_DOUBLE
-//                          ,currentNode, 0, MPI_COMM_WORLD);
+               MPI_Send((double *)(&grid[currentNode * localVectorSize - nx]), localVectorSize, MPI_DOUBLE
+                          ,currentNode, 0, MPI_COMM_WORLD);
            }
 
            for(int currentNode = 1; currentNode < size ; currentNode++)
            {
-//               MPI_Send((double *)(&vector_g[currentNode * localVectorSize - nx]), localVectorSize, MPI_DOUBLE
-//                          ,currentNode, 0, MPI_COMM_WORLD);
+               MPI_Send((double *)(&vector_g[currentNode * localVectorSize - nx]), localVectorSize, MPI_DOUBLE
+                          ,currentNode, 0, MPI_COMM_WORLD);
            }
 
            double result = 0.0;
            for ( int i = 0; i < nx * ny; ++i)
            {
-               result += vector_g[i]*vector_g[i];
+           // result += vector_g[i]*vector_g[i];
            }
            delta = result;
 
@@ -161,10 +161,10 @@ void Grid::initAndSplit(double epsilon)
     else
     {
         MPI_Status status;
-//        MPI_Recv( (double *)&localVector_g[0],localVectorSize ,MPI_DOUBLE,
-//                  0, 0 , MPI_COMM_WORLD, &status );
-//        MPI_Recv( (double *)&local_grid[0] , localVectorSize ,MPI_DOUBLE,
-//                  0, 0 , MPI_COMM_WORLD, &status );
+        MPI_Recv( (double *)&localVector_g[0],localVectorSize ,MPI_DOUBLE,
+                  0, 0 , MPI_COMM_WORLD, &status );
+        MPI_Recv( (double *)&local_grid[0] , localVectorSize ,MPI_DOUBLE,
+                  0, 0 , MPI_COMM_WORLD, &status );
     }
 
 
@@ -186,7 +186,7 @@ void Grid::setValue(std::vector<double> & vector,int i, int j, double value)
     {
         std::cout << "Matrix::setValue: Position is out of range" << std::endl;
     }
-    vector[i*ny + j] = value;
+    vector[i*nx + j] = value;
 }
 
 double Grid::getValue(std::vector<double> & vector, int i, int j)
@@ -195,7 +195,7 @@ double Grid::getValue(std::vector<double> & vector, int i, int j)
     {
         std::cout << "Matrix::setValue: Position is out of range" << std::endl;
     }
-    return vector[i*ny + j];
+    return vector[i*nx + j];
 }
 
 double Grid::computeDotProduct(std::vector<double> & vector_A,std::vector<double> & vector_B)
