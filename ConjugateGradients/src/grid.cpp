@@ -105,8 +105,8 @@ int Grid::computeConjugateGradients(int iterations, double epsilon)
 //        delta = delta_new;
     }
 
-    MPI_Gather((double *)&local_grid[0], localVectorSize, MPI_DOUBLE, (double *)&grid[0],localVectorSize,
-               MPI_DOUBLE, 0, MPI_COMM_WORLD );
+//    MPI_Gather((double *)&local_grid[0], localVectorSize, MPI_DOUBLE, (double *)&grid[0],localVectorSize,
+//               MPI_DOUBLE, 0, MPI_COMM_WORLD );
     return 0;
 }
 
