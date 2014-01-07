@@ -12,13 +12,20 @@ class Grid
 protected:
 int nx;
 int ny;
+int localVectorSize_withGhosts;
+int localVectorSize;
+
 std::vector<double> grid;
+std::vector<double> vector_g;
+
+std::vector<double> local_grid;
+
 std::vector<double> resultVector_Fxy;
 
 
-std::vector<double> vector_g;
-std::vector<double> vector_d;
-std::vector<double> vector_h;
+std::vector<double> localVector_g;
+std::vector<double> localVector_h;
+std::vector<double> localVector_d;
 
 double delta;
 double alpha;
@@ -26,7 +33,6 @@ double beta;
 
 int  rank;
 int  size;
-
 
 double hx;
 double hy;
@@ -38,7 +44,7 @@ double stencil_left;
 double stencil_center;
 
 public:
-Grid(int const x, int const y);
+Grid(int const x, int const y, int s, int r);
 ~Grid();
 
 int computeConjugateGradients(int iterations, double epsilon);
@@ -48,7 +54,9 @@ void fill_resultFxy();
 void print(std::string filename);
 void getResidual();
 void getResidualVector(std::vector<double> & vector);
-
+void initAndSplit(double epsilon);
+void sendAndReceive_ghosts();
+void gatherLocalGrids();
 double computeDotProduct(std::vector<double> & vector_A,std::vector<double> & vector_B);
 
 };

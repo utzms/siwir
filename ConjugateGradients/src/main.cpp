@@ -29,7 +29,7 @@ int main(int argc, char ** argv)
 	int cpu = 0;
 	
 	//create Grid and initialize result vector (Fxy)
-    Grid Grid(dim_x, dim_y,);
+    Grid Grid(dim_x, dim_y, size, rank);
 	
 	
 	
@@ -51,7 +51,9 @@ int main(int argc, char ** argv)
 	}
 
 	// write solution to file
-    Grid.print("solution.txt");
+    if(rank == 0)
+        Grid.print("solution.txt");
+
     MPI_Finalize();
     return 0;
 }
