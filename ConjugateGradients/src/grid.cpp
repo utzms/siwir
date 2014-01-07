@@ -136,13 +136,13 @@ void Grid::initAndSplit(double epsilon)
         //send partial vecors
            for(int currentNode = 1; currentNode < size ; currentNode++)
            {
-               MPI_Send((double *)(&grid[currentNode * localVectorSize - nx]), localVectorSize_withGhosts, MPI_DOUBLE
+               MPI_Send((double *)(&grid[currentNode * localVectorSize - nx]), localVectorSize, MPI_DOUBLE
                           ,currentNode, 0, MPI_COMM_WORLD);
            }
 
            for(int currentNode = 1; currentNode < size ; currentNode++)
            {
-               MPI_Send((double *)(&vector_g[currentNode * localVectorSize - nx]), localVectorSize_withGhosts, MPI_DOUBLE
+               MPI_Send((double *)(&vector_g[currentNode * localVectorSize - nx]), localVectorSize, MPI_DOUBLE
                           ,currentNode, 0, MPI_COMM_WORLD);
            }
 
@@ -161,9 +161,9 @@ void Grid::initAndSplit(double epsilon)
     else
     {
         MPI_Status status;
-        MPI_Recv( (double *)&localVector_g[0],localVectorSize_withGhosts ,MPI_DOUBLE,
+        MPI_Recv( (double *)&localVector_g[0],localVectorSize ,MPI_DOUBLE,
                   0, 0 , MPI_COMM_WORLD, &status );
-        MPI_Recv( (double *)&local_grid[0] , localVectorSize_withGhosts ,MPI_DOUBLE,
+        MPI_Recv( (double *)&local_grid[0] , localVectorSize ,MPI_DOUBLE,
                   0, 0 , MPI_COMM_WORLD, &status );
     }
 
