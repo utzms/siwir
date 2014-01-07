@@ -1,7 +1,6 @@
 CXX = mpiCC
-CXXFLAGS = -O3 -Wall -Winline -Wshadow -ansi -g
+CXXFLAGS = -O3 -Wall -Winline -Wshadow -ansi
 TARGET =  cg
-LDFLAGS = -L/usr/loca/
 INC = 
 INCPATH=./include/
 SRCPATH=./src/
@@ -9,13 +8,13 @@ SRCPATH=./src/
 
 
 $(TARGET): main.o grid.o
-	$(CXX) $(CXXFLAGS) -o $(TARGET) main.o grid.o $(INC) $(LDFLAGS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -o $(TARGET) main.o grid.o $(INC) $(LIBS)
 
 main.o: $(SRCPATH)main.cpp $(INCPATH)grid.h
-	$(CXX) $(CXXFLAGS) -c $(SRCPATH)main.cpp $(INCPATH)grid.h  $(INC) $(LDFLAGS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -c $(SRCPATH)main.cpp $(INCPATH)grid.h  $(INC) $(LIBS)
 
 grid.o: $(SRCPATH)grid.cpp $(INCPATH)grid.h
-	$(CXX) $(CXXFLAGS) -c $(SRCPATH)grid.cpp $(INCPATH)grid.h $(INC) $(LDFLAGS) $(LIBS)
+	$(CXX) $(CXXFLAGS) -c $(SRCPATH)grid.cpp $(INCPATH)grid.h $(INC) $(LIBS)
  
 
 .PHONY: clean	
