@@ -1,20 +1,24 @@
 #include "../include/grid.h"
 
-Grid::Grid(int const x, int const y)
+Grid::Grid(int const x, int const y, int s , int r)
 {
-	
+
+    size = s;
+    rank = r;
+
 	//set gridsize
     nx = x + 1;
 	ny = y + 1;
+
 
 	//set stepsize hx,hy
 	hx = 2.0/static_cast<double>(x);
 	hy = 1.0/static_cast<double>(y);
 	
 	//compute and set stencils for rbgs
-	double hx_sq = 4.0 /static_cast<double>(x*x);
+    double hx_sq = 4.0 /static_cast<double>(x*x);
 	double hy_sq = 1.0 /static_cast<double>(y*y);
-	 	
+
 	stencil_up = 1.0/hy_sq;
 	stencil_down = stencil_up;
 	stencil_right = 1.0/(hx_sq);
@@ -102,7 +106,7 @@ int Grid::computeConjugateGradients(int iterations, double epsilon)
 
 
         beta = delta_new/delta;
-
+        //d = -g + beta * d
         for ( int i = 0; i < nx * ny; ++i)
         {
             vector_d[i] = -vector_g[i] + beta * vector_d[i];

@@ -1,8 +1,9 @@
 #include "../include/grid.h"
 #include <iostream>
 #include <sys/time.h>
-#include <omp.h>
+#include <mpi.h>
 #include <string.h>
+
 int main(int argc, char ** argv)
 {
 
@@ -18,24 +19,8 @@ int main(int argc, char ** argv)
 	int iterations = atoi(argv[3]);
     double epsilon = atoi(argv[4]);
 	std::string log("-log");
-	
+    MPI_Init( int* argc, char*** argv );
 	int cpu = 0;
-//  omp_set_num_threads(16);
-//	#pragma omp parallel
-
-	{
-		
-		
-
-		if (omp_get_thread_num()== 0)
-		{
-			cpu=omp_get_num_threads();
-			
-		}
-		
-	}
-	 
-		
 	
 	//create Grid and initialize result vector (Fxy)
     Grid Grid(dim_x, dim_y);

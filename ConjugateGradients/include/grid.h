@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <string>
-#include <omp.h>
+#include <mpi.h>
 #include <math.h>
 
 class Grid
@@ -23,6 +23,9 @@ std::vector<double> vector_h;
 double delta;
 double alpha;
 double beta;
+
+int  rank;
+int  size;
 
 
 double hx;
