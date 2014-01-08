@@ -18,15 +18,17 @@ Grid::Grid(int const x, int const y, int s , int r)
 		vectorSize_node0 = (ny-2)*nx - (size-1) * vectorSize;
 		vectorSize_withGhosts_node0 = vectorSize_node0 + 2*nx;
 		dim_y = vectorSize_node0/nx;
+		std::cout << rank << " vectorSize: " << vectorSize_node0 << " with dim_y " << dim_y << std::endl;
 	}else{
 		dim_y = vectorSize/nx;
+		std::cout << rank << " vectorSize: " << vectorSize << " with dim_y " << dim_y << std::endl;
 	}
 
 	vectorSize_withGhosts = vectorSize + 2*nx;
 	dim_x = x;
 
 
-	std::cout << rank << " vectorSize: " << vectorSize << " with dim_y " << dim_y << std::endl;
+
 	//set stepsize hx,hy
 	hx = 2.0/static_cast<double>(x);
 	hy = 1.0/static_cast<double>(y);
@@ -182,7 +184,8 @@ int Grid::computeConjugateGradients(int iterations, double epsilon)
 
 		  if(delta_new <= epsilon)
 		  {
-			  return 0;
+			  std::cout << iter << std::endl;
+			  break;
 		  }
 
 		  beta = delta_new/delta;
@@ -205,8 +208,16 @@ int Grid::computeConjugateGradients(int iterations, double epsilon)
 		  delta = delta_new;
     }
 
-	 MPI_Gather((double *)&local_grid[nx], vectorSize, MPI_DOUBLE, (double *)&grid[0] , vectorSize,
-	         MPI_DOUBLE, 0, MPI_COMM_WORLD );
+	gatherLocalGrids();
+//	 MPI_Gather((double *)&local_grid[nx], vectorSize, MPI_DOUBLE, (double *)&grid[0] , vectorSize,
+//			 MPI_DOUBLE, 0, MPI_COMM_WORLD );
+
+//	 if(rank == 0){
+//		for ( int i = nx; i < vectorSize_node0+nx; ++i)
+//		{
+//			grid[i] = local_grid[i];
+//		}
+//	 }
     return 0;
 }
 
@@ -221,7 +232,7 @@ void Grid::initAndSplit(double epsilon)
 		  //init g
 		  for ( int i = 0; i < nx * ny; ++i)
 		  {
-			   //vector_g[i] = 0.0;
+			   vector_g[i] = 0.0;
 		  }
      	  getResidualVector(vector_g);
 
@@ -256,7 +267,6 @@ void Grid::initAndSplit(double epsilon)
            {
                return;
            }
-			std::cout << rank << " delta: " << delta<< std::endl;
 		   MPI_Bcast(&delta, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     }
     else
@@ -272,6 +282,28 @@ void Grid::initAndSplit(double epsilon)
 
 }
 
+void Grid::gatherLocalGrids()
+{
+	if(rank == 0)
+	{
+	   for ( int i = nx; i < vectorSize_node0+nx; ++i)
+	   {
+		   grid[i] = local_grid[i];
+	   }
+
+	   for(int currentNode = 1; currentNode < size ; currentNode++)
+	   {
+			MPI_Status status;
+			MPI_Recv( (double *)&grid[vectorSize_node0 + nx + (currentNode-1) * vectorSize] , vectorSize ,MPI_DOUBLE, currentNode, 0 , MPI_COMM_WORLD, &status );
+	   }
+
+	}
+	else
+	{
+		MPI_Send((double *)(&local_grid[nx]), vectorSize, MPI_DOUBLE ,0 , 0, MPI_COMM_WORLD);
+	}
+}
+
 void Grid::sendAndReceive_ghosts()
 {
 	MPI_Request request[2];
@@ -281,7 +313,7 @@ void Grid::sendAndReceive_ghosts()
 	if(rank != 0)
 	{
 		MPI_Issend((double *)(&localVector_d[nx]), nx, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD , &request[0]);
-		std::cerr << rank << " sended " << nx/nx << std::endl;
+
 	}
 	
 	if(rank != size-1)
@@ -289,16 +321,15 @@ void Grid::sendAndReceive_ghosts()
 		if(rank == 0)
 		{
 			MPI_Issend((double *)(&localVector_d[vectorSize_withGhosts_node0-2*nx]), nx, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD , &request[1]);
-			std::cerr << rank << " sended " << (vectorSize_withGhosts_node0-2*nx) /nx << std::endl;
+
 		}
 		else
 		{
 			MPI_Issend((double *)(&localVector_d[vectorSize_withGhosts-2*nx]), nx, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD , &request[1]);
-			std::cerr << rank << " sended " << (vectorSize_withGhosts-2*nx) /nx << std::endl;
+
 		}
 	}
 
-	std::cerr << rank << " sended" << std::endl;
 
 	if(rank != size-1)
 	{
@@ -310,14 +341,13 @@ void Grid::sendAndReceive_ghosts()
 		{
 			MPI_Recv( (double *)&localVector_d[vectorSize_withGhosts-nx] , nx ,MPI_DOUBLE, rank+1, 0 , MPI_COMM_WORLD, &send_status );
 		}
-		std::cerr << rank << " received " << "from " << rank +1 << std::endl;
+
 
 	}
 
 	if(rank != 0)
 	{
 		MPI_Recv( (double *)&localVector_d[0] , nx ,MPI_DOUBLE, rank-1, 0 , MPI_COMM_WORLD, &send_status );
-		std::cerr << rank << " received from " << rank-1 << std::endl;
 	}
 	
 	if(rank != 0)
@@ -325,9 +355,10 @@ void Grid::sendAndReceive_ghosts()
 	
 	if(rank != size-1)
 		MPI_Wait(&request[1], &status[1]);
-	std::cerr << rank << " continues" << std::endl;
 
 }
+
+
 
 
 //<------------MPI FUNCTIONS
