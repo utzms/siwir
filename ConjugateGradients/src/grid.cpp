@@ -11,17 +11,16 @@ Grid::Grid(int const x, int const y, int s , int r)
 	ny = y + 1;
 
 
-
+	//compute and set vector sizes (locally used by nodes)
 	vectorSize = ((ny-2)/size + 1) * nx;
 	if(rank == 0)
 	{
+		//vector size(+ ghost zones) of node 0 is treated additionally
 		vectorSize_node0 = (ny-2)*nx - (size-1) * vectorSize;
 		vectorSize_withGhosts_node0 = vectorSize_node0 + 2*nx;
 		dim_y = vectorSize_node0/nx;
-		std::cout << rank << " vectorSize: " << vectorSize_node0 << " with dim_y " << dim_y << std::endl;
-	}else{
+		}else{
 		dim_y = vectorSize/nx;
-		std::cout << rank << " vectorSize: " << vectorSize << " with dim_y " << dim_y << std::endl;
 	}
 
 	vectorSize_withGhosts = vectorSize + 2*nx;
@@ -47,21 +46,22 @@ Grid::Grid(int const x, int const y, int s , int r)
     {
         grid.resize(nx*ny);
         vector_g.resize(nx*ny);
-		//init grid
+		//init x(grid)
 		for ( int i = 0; i < nx * ny; ++i)
 		{
 			 grid[i] = 0.0;
 		}
 
-		 //initialize last row
-		 for ( int i = 0; i < x+1; ++i)
-		 {
-			 double initialValue = sin(2.0*M_PI*(double)i*(2.0/(double)x))*sinh(2.0*M_PI);
-			 setValue(grid ,y,i,initialValue);
-		 }
+		//initialize last row
+		for ( int i = 0; i < x+1; ++i)
+		{
+			double initialValue = sin(2.0*M_PI*(double)i*(2.0/(double)x))*sinh(2.0*M_PI);
+			setValue(grid ,y,i,initialValue);
+		}
     }
 	if(rank == 0)
 	{
+		//apply resize for local vectors for node 0
 		localVector_g.resize(vectorSize_withGhosts_node0);
 		localVector_d.resize(vectorSize_withGhosts_node0);
 		localVector_h.resize(vectorSize_withGhosts_node0);
@@ -76,6 +76,7 @@ Grid::Grid(int const x, int const y, int s , int r)
 	}
 	else
 	{
+		//apply resize for local vectors
 		localVector_g.resize(vectorSize_withGhosts);
 		localVector_d.resize(vectorSize_withGhosts);
 		localVector_h.resize(vectorSize_withGhosts);
@@ -99,8 +100,8 @@ int Grid::computeConjugateGradients(int iterations, double epsilon)
 {
 
     initAndSplit(epsilon);
-    //initialize vector d
 
+    //initialize vector d
 	if(rank == 0)
 	{
 		for ( int i = nx; i < vectorSize_node0+nx; ++i)
@@ -120,7 +121,6 @@ int Grid::computeConjugateGradients(int iterations, double epsilon)
     {
 
 		  sendAndReceive_ghosts();
-
 		  //h = Ad
 		  for(int i = 1; i <= dim_y; ++i)
 		  {
@@ -184,7 +184,6 @@ int Grid::computeConjugateGradients(int iterations, double epsilon)
 
 		  if(delta_new <= epsilon)
 		  {
-			  std::cout << iter << std::endl;
 			  break;
 		  }
 
@@ -209,15 +208,6 @@ int Grid::computeConjugateGradients(int iterations, double epsilon)
     }
 
 	gatherLocalGrids();
-//	 MPI_Gather((double *)&local_grid[nx], vectorSize, MPI_DOUBLE, (double *)&grid[0] , vectorSize,
-//			 MPI_DOUBLE, 0, MPI_COMM_WORLD );
-
-//	 if(rank == 0){
-//		for ( int i = nx; i < vectorSize_node0+nx; ++i)
-//		{
-//			grid[i] = local_grid[i];
-//		}
-//	 }
     return 0;
 }
 
@@ -255,14 +245,14 @@ void Grid::initAndSplit(double epsilon)
 			   MPI_Send((double *)(&grid[vectorSize_node0 + (currentNode-1) * vectorSize]), vectorSize_withGhosts, MPI_DOUBLE
                           ,currentNode, 0, MPI_COMM_WORLD);
            }
-
+		   //compute <g,g>
            double result = 0.0;
            for ( int i = 0; i < nx * ny; ++i)
            {
            	 result += vector_g[i]*vector_g[i];
            }
            delta = result;
-
+		   //check and broadcast delta
            if(delta <= epsilon)
            {
                return;
@@ -272,6 +262,7 @@ void Grid::initAndSplit(double epsilon)
     else
     {
         MPI_Status status;
+		//receive (partial) g and (partial)x
 		MPI_Recv( (double *)&localVector_g[0],vectorSize_withGhosts ,MPI_DOUBLE,
                   0, 0 , MPI_COMM_WORLD, &status );
 		MPI_Recv( (double *)&local_grid[0] , vectorSize_withGhosts ,MPI_DOUBLE,
@@ -310,12 +301,14 @@ void Grid::sendAndReceive_ghosts()
 	MPI_Status status[2];
 	MPI_Status send_status;
 	
+	//send lower ghost zone
 	if(rank != 0)
 	{
 		MPI_Issend((double *)(&localVector_d[nx]), nx, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD , &request[0]);
 
 	}
 	
+	//send upper ghost zone
 	if(rank != size-1)
 	{
 		if(rank == 0)
@@ -330,7 +323,7 @@ void Grid::sendAndReceive_ghosts()
 		}
 	}
 
-
+	//receive upper ghost zone
 	if(rank != size-1)
 	{
 		if(rank == 0)
@@ -344,12 +337,13 @@ void Grid::sendAndReceive_ghosts()
 
 
 	}
-
+	//receive lower ghost zone
 	if(rank != 0)
 	{
 		MPI_Recv( (double *)&localVector_d[0] , nx ,MPI_DOUBLE, rank-1, 0 , MPI_COMM_WORLD, &send_status );
 	}
 	
+	//wait for sends
 	if(rank != 0)
 		MPI_Wait(&request[0], &status[0]);
 	
@@ -357,11 +351,8 @@ void Grid::sendAndReceive_ghosts()
 		MPI_Wait(&request[1], &status[1]);
 
 }
-
-
-
-
 //<------------MPI FUNCTIONS
+
 void Grid::setValue(std::vector<double> & vector,int i, int j, double value)
 {
     if(i >= nx || j >= ny)

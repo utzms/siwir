@@ -34,29 +34,30 @@ int main(int argc, char ** argv)
 	
 	
 	//compute Gauss Seidel + time meassurement 
-	timeval start,end;	
-	gettimeofday(&start,0);
-	Grid.computeConjugateGradients(iterations,epsilon);
-	gettimeofday(&end,0);
-	double time = ((double)(end.tv_sec*1000000 + end.tv_usec)-(double)(start.tv_sec*1000000 + start.tv_usec))/1000000;
-	
-	//print wall clock time and residual
-	std::cout <<"rank: " << rank<< " wall clock time: " << time << std::endl;
-
-	
-	//log time if -log option set	
-	if( argc >= 5 && (log.compare(std::string(argv[4]))) == 0){
-		std::ofstream logFile("log.csv",std::ios::out|std::ios::app);
-		logFile << argv[1] <<"," << cpu  << ","<< time << std::endl;
+	timeval start,end;
+	if(rank == 0){
+		gettimeofday(&start,0);
 	}
 
-	// write solution to file
-   	if(rank == 0)
-	{
-		Grid.getResidual();
-		std::cout << "print->" << std::endl;
-       	 	Grid.print("solution.txt");
+	Grid.computeConjugateGradients(iterations,epsilon);
 
+	if(rank == 0){
+		gettimeofday(&end,0);
+		double time = ((double)(end.tv_sec*1000000 + end.tv_usec)-(double)(start.tv_sec*1000000 + start.tv_usec))/1000000;
+
+		//print wall clock time and residual
+		std::cout << " wall clock time: " << time << std::endl;
+
+		//log time if -log option set
+		if( argc >= 5 && (log.compare(std::string(argv[4]))) == 0)
+		{
+			std::ofstream logFile("log.csv",std::ios::out|std::ios::app);
+			logFile << argv[1] <<"," << cpu  << ","<< time << std::endl;
+		}
+
+		// write solution to file
+		Grid.getResidual();
+		Grid.print("solution.txt");
 	}
 
     MPI_Finalize();
