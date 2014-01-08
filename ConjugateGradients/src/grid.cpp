@@ -10,9 +10,23 @@ Grid::Grid(int const x, int const y, int s , int r)
     nx = x + 1;
 	ny = y + 1;
 
-    localVectorSize =(nx * ny) / size;
-    localVectorSize_withGhosts = (nx * ny) / size + 2*nx;
 
+
+	vectorSize = ((ny-2)/size + 1) * nx;
+	if(rank == 0)
+	{
+		vectorSize_node0 = (ny-2)*nx - (size-1) * vectorSize;
+		vectorSize_withGhosts_node0 = vectorSize_node0 + 2*nx;
+		dim_y = vectorSize_node0/nx;
+	}else{
+		dim_y = vectorSize/nx;
+	}
+
+	vectorSize_withGhosts = vectorSize + 2*nx;
+	dim_x = x;
+
+
+	std::cout << rank << " vectorSize: " << vectorSize << " with dim_y " << dim_y << std::endl;
 	//set stepsize hx,hy
 	hx = 2.0/static_cast<double>(x);
 	hy = 1.0/static_cast<double>(y);
@@ -31,12 +45,47 @@ Grid::Grid(int const x, int const y, int s , int r)
     {
         grid.resize(nx*ny);
         vector_g.resize(nx*ny);
-    }
-    localVector_g.resize(localVectorSize_withGhosts);
-    localVector_d.resize(localVectorSize_withGhosts);
-    localVector_h.resize(localVectorSize_withGhosts);
-    local_grid.resize(localVectorSize_withGhosts);
+		//init grid
+		for ( int i = 0; i < nx * ny; ++i)
+		{
+			 grid[i] = 0.0;
+		}
 
+		 //initialize last row
+		 for ( int i = 0; i < x+1; ++i)
+		 {
+			 double initialValue = sin(2.0*M_PI*(double)i*(2.0/(double)x))*sinh(2.0*M_PI);
+			 setValue(grid ,y,i,initialValue);
+		 }
+    }
+	if(rank == 0)
+	{
+		localVector_g.resize(vectorSize_withGhosts_node0);
+		localVector_d.resize(vectorSize_withGhosts_node0);
+		localVector_h.resize(vectorSize_withGhosts_node0);
+		local_grid.resize(vectorSize_withGhosts_node0);
+		for ( int i = 0; i < vectorSize_withGhosts_node0; ++i)
+		{
+			localVector_g[i] = 0;
+			localVector_d[i] = 0;
+			localVector_h[i] = 0;
+			local_grid[i] = 0;
+		}
+	}
+	else
+	{
+		localVector_g.resize(vectorSize_withGhosts);
+		localVector_d.resize(vectorSize_withGhosts);
+		localVector_h.resize(vectorSize_withGhosts);
+		local_grid.resize(vectorSize_withGhosts);
+		for ( int i = 0; i < vectorSize_withGhosts; ++i)
+		{
+			localVector_g[i] = 0;
+			localVector_d[i] = 0;
+			localVector_h[i] = 0;
+			local_grid[i] = 0;
+		}
+	}
 }
 
 Grid::~Grid()
@@ -49,66 +98,114 @@ int Grid::computeConjugateGradients(int iterations, double epsilon)
 
     initAndSplit(epsilon);
     //initialize vector d
-    for ( int i = nx; i < localVectorSize; ++i)
-    {
-        localVector_d[i] = -(localVector_g[i]);
-    }
+
+	if(rank == 0)
+	{
+		for ( int i = nx; i < vectorSize_node0+nx; ++i)
+		{
+			localVector_d[i] = -(localVector_g[i]);
+		}
+	}
+	else
+	{
+		for ( int i = nx; i < vectorSize+nx; ++i)
+		{
+			localVector_d[i] = -(localVector_g[i]);
+		}
+	}
 
 	for(int iter = 0; iter < iterations; ++iter)
     {
 
-          sendAndReceive_ghosts();
+		  sendAndReceive_ghosts();
 
-//        //h = Ad
-//        for(int i = 1; i < ny-1; ++i)
-//        {
-//            for(int j = 1; j < nx-1; ++j)
-//            {
-//               double tmpAx	= (2.0/(hx*hx) + 2.0/(hy*hy) + 4.0 * M_PI * M_PI)*getValue(localVector_d,i,j)
-//                        + (-1.0/(hy*hy))*getValue(localVector_d,i-1,j)
-//                        + (-1.0/(hy*hy))*getValue(localVector_d,i+1,j)
-//                        + (-1.0/(hx*hx))*getValue(localVector_d,i,j-1)
-//                        + (-1.0/(hx*hx))*getValue(localVector_d,i,j+1);
-//               setValue(localVector_h,i,j,tmpAx);
-//            }
-//        }
+		  //h = Ad
+		  for(int i = 1; i <= dim_y; ++i)
+		  {
+			  for(int j = 1; j < dim_x; ++j)
+			  {
+				 double tmpAx	= (2.0/(hx*hx) + 2.0/(hy*hy) + 4.0 * M_PI * M_PI)*getValue(localVector_d,i,j)
+						  + (-1.0/(hy*hy))*getValue(localVector_d,i-1,j)
+						  + (-1.0/(hy*hy))*getValue(localVector_d,i+1,j)
+						  + (-1.0/(hx*hx))*getValue(localVector_d,i,j-1)
+						  + (-1.0/(hx*hx))*getValue(localVector_d,i,j+1);
+				 setValue(localVector_h,i,j,tmpAx);
+			  }
+		  }
 
-//        //alpha = delta/<d,h>
-//        alpha = delta / computeDotProduct(localVector_d,localVector_h);
+		  //alpha = delta/<d,h>
+		  double alpha_part = computeDotProduct(localVector_d,localVector_h);
 
-//        //x = x +  alpha * d
-//        for ( int i = nx; i < localVectorSize; ++i)
-//        {
-//            grid[i] = grid[i] + alpha * localVector_d[i];
-//        }
+		  double alpha_complete = 0.0;
+		  MPI_Allreduce( &alpha_part, &alpha_complete, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
 
-//        //g = g + alpha * g
-//        for ( int i = 0; i < localVectorSize; ++i)
-//        {
-//            localVector_g[i] = localVector_g[i] + alpha * localVector_h[i];
-//        }
+		  alpha = delta / alpha_complete;
 
-//        //delta1 = <g,g>
-//        double delta_part = computeDotProduct(localVector_g,localVector_g);
-//	  double delta_new  = 0.0;
-//	  MPI_AllReduce( &delta_part, &delta_new, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
-		
-//        if(delta_new <= epsilon)
-//        {
-//            return 0;
-//        }
+		  //x = x +  alpha * d
+		  if(rank == 0)
+		  {
+			  for ( int i = nx; i < vectorSize_node0+nx; ++i)
+			  {
+				  local_grid[i] = local_grid[i] + alpha * localVector_d[i];
+			  }
+		  }
+		  else
+		  {
+			  for ( int i = nx; i < vectorSize+nx; ++i)
+			  {
+				  local_grid[i] = local_grid[i] + alpha * localVector_d[i];
+			  }
+		  }
 
 
-//        beta = delta_new/delta;
-//        //d = -g + beta * d
-//        for ( int i = nx; i < localVectorSize; ++i)
-//        {
-//            localVector_d[i] = -localVector_g[i] + beta * localVector_d[i];
-//        }
-//        delta = delta_new;
+		  //g = g + alpha * g
+		  if(rank == 0)
+		  {
+			  for ( int i = nx; i < vectorSize_node0+nx; ++i)
+			  {
+				  localVector_g[i] = localVector_g[i] + alpha * localVector_h[i];
+			  }
+		  }
+		  else
+		  {
+			  for ( int i = nx; i < vectorSize+nx; ++i)
+			  {
+				  localVector_g[i] = localVector_g[i] + alpha * localVector_h[i];
+			  }
+		  }
+
+
+		  //delta1 = <g,g>
+		  double delta_part = computeDotProduct(localVector_g,localVector_g);
+		  double delta_new  = 0.0;
+		  MPI_Allreduce( &delta_part, &delta_new, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD );
+
+		  if(delta_new <= epsilon)
+		  {
+			  return 0;
+		  }
+
+		  beta = delta_new/delta;
+		  //d = -g + beta * d
+		  if(rank == 0)
+		  {
+			  for ( int i = nx; i < vectorSize_node0+nx; ++i)
+			  {
+				  localVector_d[i] = -localVector_g[i] + beta * localVector_d[i];
+			  }
+		  }
+		  else
+		  {
+			  for ( int i = nx; i < vectorSize+nx; ++i)
+			  {
+				  localVector_d[i] = -localVector_g[i] + beta * localVector_d[i];
+			  }
+		  }
+
+		  delta = delta_new;
     }
 
-	 MPI_Gather((double *)&local_grid[nx], localVectorSize, MPI_DOUBLE, (double *)&grid[0],localVectorSize,
+	 MPI_Gather((double *)&local_grid[nx], vectorSize, MPI_DOUBLE, (double *)&grid[0] , vectorSize,
 	         MPI_DOUBLE, 0, MPI_COMM_WORLD );
     return 0;
 }
@@ -119,33 +216,32 @@ void Grid::initAndSplit(double epsilon)
     //initialize vector g
     if(rank == 0)
     {
-        //init resultVector_Fxy
-	  fill_resultFxy();
-        //init g
+		  //init resultVector_Fxy
+		  fill_resultFxy();
+		  //init g
+		  for ( int i = 0; i < nx * ny; ++i)
+		  {
+			   //vector_g[i] = 0.0;
+		  }
      	  getResidualVector(vector_g);
-        //init grid
-          for ( int i = 0; i < nx * ny; ++i)
-          {
-               grid[i] = 0.0;
-          }
 
-        //initialize last row
-           for ( int i = 0; i < nx; ++i)
-           {
-               double initialValue = sin(2.0*M_PI*(double)i*(2.0/(double)(nx-1)))*sinh(2.0*M_PI);
-               setValue(grid ,(ny-1),i,initialValue);
-           }
+		   //set partial vector for node 0
+		   for ( int i = 0; i < vectorSize_withGhosts_node0; ++i)
+		   {
+			   localVector_g[i] = vector_g[i];
+			   local_grid[i] = grid[i];
+		   }
 
-        //send partial vecors
+		   //send partial vectors
            for(int currentNode = 1; currentNode < size ; currentNode++)
-           {
-               MPI_Send((double *)(&vector_g[currentNode * localVectorSize - nx]), localVectorSize_withGhosts, MPI_DOUBLE
+		   {
+			   MPI_Send((double *)(&vector_g[vectorSize_node0 + (currentNode-1) * vectorSize]), vectorSize_withGhosts, MPI_DOUBLE
                           ,currentNode, 0, MPI_COMM_WORLD);
            }
 
-           for(int currentNode = 1; currentNode < size ; currentNode++)
+		   for(int currentNode = 1; currentNode < size ; currentNode++)
            {
-               MPI_Send((double *)(&grid[currentNode * localVectorSize - nx]), localVectorSize_withGhosts, MPI_DOUBLE
+			   MPI_Send((double *)(&grid[vectorSize_node0 + (currentNode-1) * vectorSize]), vectorSize_withGhosts, MPI_DOUBLE
                           ,currentNode, 0, MPI_COMM_WORLD);
            }
 
@@ -160,15 +256,17 @@ void Grid::initAndSplit(double epsilon)
            {
                return;
            }
+			std::cout << rank << " delta: " << delta<< std::endl;
+		   MPI_Bcast(&delta, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     }
     else
     {
         MPI_Status status;
-        MPI_Recv( (double *)&localVector_g[0],localVectorSize_withGhosts ,MPI_DOUBLE,
+		MPI_Recv( (double *)&localVector_g[0],vectorSize_withGhosts ,MPI_DOUBLE,
                   0, 0 , MPI_COMM_WORLD, &status );
-        MPI_Recv( (double *)&local_grid[0] , localVectorSize_withGhosts ,MPI_DOUBLE,
+		MPI_Recv( (double *)&local_grid[0] , vectorSize_withGhosts ,MPI_DOUBLE,
                   0, 0 , MPI_COMM_WORLD, &status );
-	std::cout << rank << std::endl;
+		MPI_Bcast(&delta, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
     }
 
 
@@ -182,23 +280,44 @@ void Grid::sendAndReceive_ghosts()
 	
 	if(rank != 0)
 	{
-		MPI_Issend((double *)(&localVector_d[0]), nx, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD , &request[0]);
+		MPI_Issend((double *)(&localVector_d[nx]), nx, MPI_DOUBLE, rank-1, 0, MPI_COMM_WORLD , &request[0]);
+		std::cerr << rank << " sended " << nx/nx << std::endl;
 	}
-	
 	
 	if(rank != size-1)
 	{
-		MPI_Issend((double *)(&localVector_d[localVectorSize]), nx, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD , &request[1]);
-        }
-	
-	if(rank != size-1) 
-	{
-		MPI_Recv( (double *)&localVector_d[localVectorSize] , nx ,MPI_DOUBLE, rank+1, 0 , MPI_COMM_WORLD, &send_status );
+		if(rank == 0)
+		{
+			MPI_Issend((double *)(&localVector_d[vectorSize_withGhosts_node0-2*nx]), nx, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD , &request[1]);
+			std::cerr << rank << " sended " << (vectorSize_withGhosts_node0-2*nx) /nx << std::endl;
+		}
+		else
+		{
+			MPI_Issend((double *)(&localVector_d[vectorSize_withGhosts-2*nx]), nx, MPI_DOUBLE, rank+1, 0, MPI_COMM_WORLD , &request[1]);
+			std::cerr << rank << " sended " << (vectorSize_withGhosts-2*nx) /nx << std::endl;
+		}
 	}
-        
+
+	std::cerr << rank << " sended" << std::endl;
+
+	if(rank != size-1)
+	{
+		if(rank == 0)
+		{
+			MPI_Recv( (double *)&localVector_d[vectorSize_withGhosts_node0-nx] , nx ,MPI_DOUBLE, rank+1, 0 , MPI_COMM_WORLD, &send_status );
+		}
+		else
+		{
+			MPI_Recv( (double *)&localVector_d[vectorSize_withGhosts-nx] , nx ,MPI_DOUBLE, rank+1, 0 , MPI_COMM_WORLD, &send_status );
+		}
+		std::cerr << rank << " received " << "from " << rank +1 << std::endl;
+
+	}
+
 	if(rank != 0)
 	{
 		MPI_Recv( (double *)&localVector_d[0] , nx ,MPI_DOUBLE, rank-1, 0 , MPI_COMM_WORLD, &send_status );
+		std::cerr << rank << " received from " << rank-1 << std::endl;
 	}
 	
 	if(rank != 0)
@@ -206,6 +325,8 @@ void Grid::sendAndReceive_ghosts()
 	
 	if(rank != size-1)
 		MPI_Wait(&request[1], &status[1]);
+	std::cerr << rank << " continues" << std::endl;
+
 }
 
 
@@ -230,11 +351,20 @@ double Grid::getValue(std::vector<double> & vector, int i, int j)
 
 double Grid::computeDotProduct(std::vector<double> & vector_A,std::vector<double> & vector_B)
 {
-    double result = 0.0;
-    for ( int i = nx; i < localVectorSize; ++i)
-    {
-        result += vector_A[i]*vector_B[i];
-    }
+	double result = 0.0;
+	if(rank == 0){
+		for ( int i = nx; i < vectorSize_node0+nx; ++i)
+		{
+			result += vector_A[i]*vector_B[i];
+		}
+	}
+	else
+	{
+		for ( int i = nx; i < vectorSize+nx; ++i)
+		{
+			result += vector_A[i]*vector_B[i];
+		}
+	}
     return result;
 }
 

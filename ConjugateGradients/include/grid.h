@@ -12,14 +12,16 @@ class Grid
 protected:
 int nx;
 int ny;
-int localVectorSize_withGhosts;
-int localVectorSize;
+int dim_x;
+int dim_y;
+int vectorSize_withGhosts;
+int vectorSize;
+int vectorSize_node0;
+int vectorSize_withGhosts_node0;
 
 std::vector<double> grid;
 std::vector<double> vector_g;
-
 std::vector<double> local_grid;
-
 std::vector<double> resultVector_Fxy;
 
 
