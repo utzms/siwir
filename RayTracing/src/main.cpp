@@ -14,7 +14,7 @@ int main( int argc, char** argv)
 	int nRays = atoi(argv[2]);
 
 
-	Grid grid(P, nRays, argv[3], argv[4]);
+    Grid grid(P, nRays, argv[3], argv[4]);
 
 	grid.print("absorption.pgm");
 

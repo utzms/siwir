@@ -1,22 +1,29 @@
 #include "../include/grid.h"
 
-Grid::Grid( double P, int rays, std::string absFile, std::string refrFile )
+Grid::Grid( double P, int rays, char* absFile, char* refrFile )
 {
 	//read in matrix from file
-	std::ifstream absCoeffFile(absFile.c_str(), std::ios::in);
-	std::ifstream refrIndFile(absFile.c_str(), std::ios::in);
+    std::ifstream absCoeffFile(absFile, std::ios::in);
+    std::ifstream refrIndFile(refrFile, std::ios::in);
 
 	int xtmp;
 	int ytmp;
 	int maxtmp;
 
-	int del ;
-	absCoeffFile >> del;
+
+    char del;
+    int  delInt;
+    absCoeffFile >> del;
+    absCoeffFile >> del;
+    refrIndFile >> del;
+    refrIndFile >> del;
+    refrIndFile >> delInt;
+    refrIndFile >> delInt;
 
 	absCoeffFile >> xtmp;
 	absCoeffFile >> ytmp;
-	_dimx = static_cast<size_t>(xtmp);
-	_dimy = static_cast<size_t>(ytmp);
+    _dimx = static_cast<int>(xtmp);
+    _dimy = static_cast<int>(ytmp);
 
 	absCoeffFile >> maxtmp;
 	_maxValue = maxtmp;
@@ -39,12 +46,16 @@ Grid::Grid( double P, int rays, std::string absFile, std::string refrFile )
 void Grid::print(std::string filename)
 {
 	std::ofstream outputFile(filename.c_str(), std::ios::out);
+    outputFile << "P2" << std::endl;
 	outputFile <<  _dimx << " " << _dimy << std::endl;
-	int size= _dimx*_dimy;
+    outputFile << _maxValue << std::endl;
+    int size= _dimx*_dimy;
 
 	for(size_t i = 0; i < size; ++i)
 	{
-		outputFile << _refractionIndex[i] << std::endl;
+        outputFile << _absorptionCoefficient[i] << " ";
+        if(i%60 == 0 || i%16 == 0)
+             outputFile << std::endl;
 	}
-	std::endl (outputFile);
+    outputFile.close();
 }

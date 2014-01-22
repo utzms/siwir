@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <iostream>
 #include <fstream>
 #include <stdlib.h>
 #include <omp.h>
@@ -27,7 +27,7 @@ class Grid
 		std::vector<Ray> spawnedRays;
 
 	public:
-		Grid( double P, int rays, std::string absFile, std::string refrFile );
+        Grid( double P, int rays, char* absFile, char* refrFile );
 		void castRays();
 		void traceRay(Ray currentRay);
 
