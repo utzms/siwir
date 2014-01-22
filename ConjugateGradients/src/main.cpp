@@ -48,13 +48,6 @@ int main(int argc, char ** argv)
 		//print wall clock time and residual
 		std::cout << " wall clock time: " << time << std::endl;
 
-		//log time if -log option set
-		if( argc >= 5 && (log.compare(std::string(argv[4]))) == 0)
-		{
-			std::ofstream logFile("log.csv",std::ios::out|std::ios::app);
-			logFile << argv[1] <<"," << cpu  << ","<< time << std::endl;
-		}
-
 		// write solution to file
 		Grid.getResidual();
 		Grid.print("solution.txt");
