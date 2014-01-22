@@ -2,7 +2,9 @@ include_directories( . )
 
 set ( OWN_SOURCES main.cpp grid.cpp )
 set ( OWN_HEADERS 
-  ../include/grid.h)
+  ../include/grid.h
+  ../include/ray.h
+	)
   
   
   

@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 2.6 ) 
 
-project ( ConjugateGradients )
+project ( RayTracing )
 
 
 # Compiler Flags
@@ -9,7 +9,7 @@ set( CMAKE_CXX_FLAGS "-std=c++0x -Wall" )
 
 if(CMAKE_COMPILER_IS_GNUCXX)
     message(STATUS "GCC detected, adding compile flags")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wconversion -Wshadow -fopenmp")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wconversion -Wshadow -fopenmp")
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
 
