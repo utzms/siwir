@@ -4,9 +4,12 @@
 #endif // RAY_H
 
 class Ray{
-	double x;
-	double y;
-	double angle;
-	double power;
-	double refractionIndex;
+public:
+    double _posX;
+    double _posY;
+    double _mX;
+    double _mY;
+    double _angle;
+    double _power;
+    double _refractionIndex;
 };
