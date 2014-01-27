@@ -16,4 +16,5 @@ public:
     double _angle;
     double _power;
     double _refractionIndex;
+	void alterAngle(double _refractionIndex);
 };

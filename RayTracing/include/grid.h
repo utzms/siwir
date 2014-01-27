@@ -34,11 +34,12 @@ class Grid
         int		_activeRays;
 
 		std::vector<Ray> spawnedRays;
-
+		std::vector< int > completedRayIndices;
 	public:
         Grid( double P, int rays, char* absFile, char* refrFile );
 		void castRays();
-		void traceRay(Ray currentRay);
+		void traceRay(Ray currentRay, int index);
+		void alterAngle(double);
 
 		void print(std::string filename);
 };

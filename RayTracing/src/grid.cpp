@@ -42,7 +42,8 @@ Grid::Grid( double P, int rays, char* absFile, char* refrFile )
     for(int i = 0;i < size;)
 	{
 		absCoeffFile >> _absorptionCoefficient[i];
-		refrIndFile  >> _refractionIndex[i++];
+		refrIndFile  >> _refractionIndex[i];
+		_absorbedPower[i++] = 0.0;
 	}
     if(rays != 0)
     {
@@ -50,7 +51,7 @@ Grid::Grid( double P, int rays, char* absFile, char* refrFile )
     }
     else
     {
-        _rayCount = 1000000;
+		_rayCount = 100;
     }
     spawnedRays.resize(rays);
 
@@ -80,45 +81,123 @@ void Grid::castRays()
 	{
 		for(int i = 0; i < _activeRays; i++)
 		{
-			traceRay(spawnedRays[i]);
+			traceRay(spawnedRays[i], i);
+		}
+
+		for(std::vector<int>::iterator completedRayIterator = completedRayIndices.begin();
+			completedRayIterator != completedRayIndices.end();
+			completedRayIterator++
+			)
+		{
+			spawnedRays.erase(spawnedRays.begin() + *completedRayIterator);
 		}
 	}
 
 }
 
-void Grid::traceRay(Ray currentRay)
+void Grid::alterAngle(double refractionIndex)
+{
+	return;
+}
+
+void Grid::traceRay(Ray currentRay, int index)
 {
 
+	// Cell Layout( 5 propagation cases )
+	//	 _ _
+	//	|_|_|
+	//->|o|_|
+	//	|_|_|
+
+
 	double xincrement = 0.2;
-	//trace Ray the next stepo: y = m(x-xa) +ya;
+	//Perform RayTracing the next stepo: y = m(x-xa) +ya;
 	currentRay._posX += xincrement;
 	currentRay._posY =  currentRay._m*currentRay._posX + currentRay._b;
 
-	//decide wether the next Cell is entered by the Ray
-	if(currentRay._posX >= currentRay._currentCellX + _hx/2 && currentRay._posY >= currentRay._currentCellY + _hy/2)
+	if(currentRay ._posX >= _dimx*_hx)
 	{
-		//refractionIndex = refractionIndex of next cell
+		_activeRays--;
+		completedRayIndices.push_back(index);
+		return;
+	}
+	else if(currentRay ._posY >= _dimx*_hx)
+	{
+		_activeRays--;
+		completedRayIndices.push_back(index);
+		return;return;
+	}
 
-	}
-	else if(currentRay._posX < currentRay._currentCellX + _hx/2 && currentRay._posY >= currentRay._currentCellY + _hy/2)
+	//decide wether the next Cell is entered by the Ray
+	//Propagation cases:
+
+	double cellRefractionIndex = 0.0;
+	double currentCellX = currentRay._currentCellX;
+	double currentCellY = currentRay._currentCellY;
+
+
+	if(currentRay._posX >= currentCellX + _hx/2
+			&& currentRay._posY >= currentCellY + _hy/2)
 	{
-		//refractionIndex = refractionIndex of next cell
+		currentRay._currentCellX++;
+		currentRay._currentCellY++;
+		cellRefractionIndex =_refractionIndex[currentRay._currentCellY * 60 + currentRay._currentCellX];
 	}
-	else if(currentRay._posX >= currentRay._currentCellX + _hx/2
-			&& currentRay._posY < currentRay._currentCellY + _hy/2
-			&& currentRay._posY > currentRay._currentCellY - _hy/2)
+	else if(currentRay._posX < currentCellX + _hx/2
+			&& currentRay._posY >= currentCellY + _hy/2)
 	{
-		//refractionIndex = refractionIndex of next cell
+		currentRay._currentCellY++;
+		cellRefractionIndex =_refractionIndex[currentRay._currentCellY * 60 + currentRay._currentCellX];
 	}
-	else if(currentRay._posX >= currentRay._currentCellX + _hx/2 && currentRay._posY < currentRay._currentCellY - _hy/2)
+	else if(currentRay._posX >= currentCellX + _hx/2
+			&& currentRay._posY <= currentCellY + _hy/2
+			&& currentRay._posY > currentCellY - _hy/2)
 	{
-		//refractionIndex = refractionIndex of next cell
+		currentRay._currentCellX++;
+		cellRefractionIndex =_refractionIndex[currentRay._currentCellY * 60 + currentRay._currentCellX];
+	}
+	else if(currentRay._posX >= currentCellX + _hx/2 && currentRay._posY <= currentCellY - _hy/2)
+	{
+		currentRay._currentCellX++;
+		currentRay._currentCellY--;
+		cellRefractionIndex =_refractionIndex[currentRay._currentCellY * 60 + currentRay._currentCellX];
+	}
+	else if(currentRay._posX <= currentCellX + _hx/2
+			&& currentRay._posY <= currentCellY - _hy/2)
+	{
+		currentRay._currentCellY--;
+		cellRefractionIndex =_refractionIndex[currentRay._currentCellY * 60 + currentRay._currentCellX];
 	}
 	else
 	{
-
+		cellRefractionIndex = currentRay._refractionIndex;
 	}
 
+	if(currentRay._refractionIndex != cellRefractionIndex)
+	{
+		alterAngle(cellRefractionIndex);
+	}
+
+
+
+	//compute Lambert Beer
+	double Pout = currentRay._power
+			* exp( -_absorptionCoefficient[currentRay._currentCellY * 60 + currentRay._currentCellX]
+			* xincrement);
+
+	// compute power difference
+	double	Pdiff  =  Pout - currentRay._power;
+	currentRay._power -= Pdiff;
+
+	// add power difference to array
+	_absorbedPower[currentRay._currentCellY * 60 + currentRay._currentCellX] += Pdiff;
+
+	if(currentRay._power < 0.001 *_initialPower)
+	{
+		_activeRays--;
+		completedRayIndices.push_back(index);
+		return;
+	}
 }
 
 void Grid::print(std::string filename)
