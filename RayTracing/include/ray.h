@@ -7,8 +7,12 @@ class Ray{
 public:
     double _posX;
     double _posY;
-    double _mX;
-    double _mY;
+	double _b;
+
+	int _currentCellX;
+	int _currentCellY;
+
+	double _m;
     double _angle;
     double _power;
     double _refractionIndex;
