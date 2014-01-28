@@ -9,8 +9,8 @@ public:
     double _posY;
 	double _b;
 
-	int _currentCellX;
-	int _currentCellY;
+    double _currentCellX;
+    double _currentCellY;
 
 	double _m;
     double _angle;

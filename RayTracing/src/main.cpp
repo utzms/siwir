@@ -15,7 +15,7 @@ int main( int argc, char** argv)
 
 
     Grid grid(P, nRays, argv[3], argv[4]);
-	//grid.castRays();
+    grid.castRays();
 	grid.print("absorption.pgm");
 
 	return 0;

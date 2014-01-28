@@ -27,6 +27,7 @@ class Grid
 		double	_offsetX;
 		double	_offsetY;
 		int		_maxValue;
+        double  _cornerAngle;
 
         //ray variables
 		int		_rayCount;
