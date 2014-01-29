@@ -79,6 +79,7 @@ void Grid::castRays()
         spawnedRays[i]._power = _initialPower;
         spawnedRays[i]._currentCellX = _hx*0.5;
         spawnedRays[i]._currentCellY = (int)(spawnedRays[i]._posY / _hy) * _hy + _hy*0.5;
+        spawnedRays[i]._refractionIndex = _refractionIndex[(int)(spawnedRays[i]._currentCellY/_hy) * 60 + (int)(spawnedRays[i]._currentCellX/_hx)];
     }
 
     _activeRays = _rayCount;
@@ -98,8 +99,11 @@ void Grid::castRays()
 }
 
 void Grid::alterAngle(Ray& currentRay, double refractionIndex)
-{
+{   std::cout << "refrIdx change-NewrefractionIndex:" << refractionIndex << std::endl;
+    std::cout << "refrIdx change-oldrefractionIndex:" << currentRay._refractionIndex  << std::endl;
 	currentRay._refractionIndex = refractionIndex;
+    std::cout << "refrIdx change-_currentCellX:" << currentRay._currentCellX << std::endl;
+
 	return;
 }
 
@@ -135,11 +139,11 @@ void Grid::traceRay(Ray& currentRay, int index)
     double downerAngle= atan2( deltaYdown, deltaX);
 
 	double cellRefractionIndex = 0.0;
-	double currentCellX = currentRay._currentCellX;
-	double currentCellY = currentRay._currentCellY;
+    double lastCellX = currentRay._currentCellX;
+    double lastCellY = currentRay._currentCellY;
 
     //Ray from side
-    if(currentRay._posX <= currentCellX - _hx*.5)
+    if(currentRay._posX <= currentRay._currentCellX - _hx*.5)
     {
         double testOpposite =   tan(fabs(currentRay._angle)) * _hx;
         //ray hits top
@@ -225,10 +229,12 @@ void Grid::traceRay(Ray& currentRay, int index)
         return;
     }
 
-//	if(currentRay._refractionIndex != cellRefractionIndex)
-//	{
-//		alterAngle(currentRay ,cellRefractionIndex);
-//	}
+
+    cellRefractionIndex = _refractionIndex[(int)(currentRay._currentCellY/_hy) * 60 + (int)(currentRay._currentCellX/_hx)];
+    if(currentRay._refractionIndex > cellRefractionIndex || currentRay._refractionIndex < cellRefractionIndex)
+    {
+        alterAngle(currentRay ,cellRefractionIndex);
+    }
 
 	//compute Lambert Beer
 	double Pout = currentRay._power
@@ -240,8 +246,8 @@ void Grid::traceRay(Ray& currentRay, int index)
     //currentRay._power -= Pdiff;
 
 	// add power difference to array
-    if(_absorbedPower[(int)(currentCellY/_hy) * 60 + (int)(currentCellX/_hx)] < 255.0)
-        _absorbedPower[(int)(currentCellY/_hy) * 60 + (int)(currentCellX/_hx)] = 255.0;
+    if(_absorbedPower[(int)(lastCellY/_hy) * 60 + (int)(lastCellX/_hx)] < 255.0)
+        _absorbedPower[(int)(lastCellY/_hy) * 60 + (int)(lastCellX/_hx)] = 255.0;
 
 	if(currentRay._power < 0.001 *_initialPower)
 	{
