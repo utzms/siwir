@@ -69,9 +69,9 @@ void Grid::castRays()
         spawnedRays[i]._posY = -0.1 + 0.2 * drand48() + 1.0;
 		spawnedRays[i]._b = spawnedRays[i]._posY;
         //set angles
-        //double angle = M_PI/6 -drand48() * M_PI/3;
+        double angle = M_PI/6 -drand48() * M_PI/3;
         //double angle = drand48() * M_PI/6;
-        double angle = -drand48() * M_PI/6;
+        //double angle = -drand48() * M_PI/2;
         //if(M_PI/6  + )
         spawnedRays[i]._angle = angle;
         spawnedRays[i]._m = tan(angle);
@@ -114,7 +114,7 @@ void Grid::traceRay(Ray& currentRay, int index)
 
     double rayOriginX = currentRay._posX;
     double rayOriginY = currentRay._posY;
-    if(currentRay._currentCellX >= _dimx * _hx || currentRay._currentCellY >= _dimy * _hy || currentRay._currentCellY <= 0.0 )
+    if(currentRay._currentCellX > _dimx * _hx || currentRay._currentCellY > _dimy * _hy || currentRay._currentCellY < 0.0 )
     {
         return;
     }
@@ -132,7 +132,7 @@ void Grid::traceRay(Ray& currentRay, int index)
 
 
     double upperAngle = atan2( deltaYup, deltaX );
-    double downerAngle= atan2( deltaX, deltaYdown);
+    double downerAngle= atan2( deltaYdown, deltaX);
 
 	double cellRefractionIndex = 0.0;
 	double currentCellX = currentRay._currentCellX;
@@ -141,9 +141,9 @@ void Grid::traceRay(Ray& currentRay, int index)
     //Ray from side
     if(currentRay._posX <= currentCellX - _hx*.5)
     {
-        double testOpposite =  tan(currentRay._angle) * _hx;
+        double testOpposite =   tan(fabs(currentRay._angle)) * _hx;
         //ray hits top
-        if(  currentRay._angle > upperAngle)
+        if(  currentRay._angle > 0.0 && currentRay._angle > upperAngle)
         {
             double adjacent = deltaYup / tan(currentRay._angle);
             currentRay._posX += adjacent;
@@ -151,9 +151,9 @@ void Grid::traceRay(Ray& currentRay, int index)
             currentRay._currentCellY += _hy;
         }
         //ray hits bottom
-        else if(  abs(currentRay._angle) > downerAngle)
+        else if( currentRay._angle < 0.0 && fabs(currentRay._angle) > downerAngle)
         {
-            double adjacent = deltaYdown / tan( -currentRay._angle);
+            double adjacent = deltaYdown / tan(fabs(currentRay._angle));
             currentRay._posX += adjacent;
             currentRay._posY =  currentRay._currentCellY - _hy*0.5;
             currentRay._currentCellY -= _hy;
@@ -162,20 +162,27 @@ void Grid::traceRay(Ray& currentRay, int index)
         else
         {
             currentRay._posX = currentRay._currentCellX + _hx*0.5;
-            currentRay._posY += testOpposite;
+            if(currentRay._angle < 0.0)
+            {
+                currentRay._posY -= testOpposite;
+            }
+            else if(currentRay._angle > 0.0)
+            {
+                currentRay._posY += testOpposite;
+            }
             currentRay._currentCellX += _hx;
         }
     }
     //Ray from Top
     else if( deltaX < _hx && currentRay._angle < 0.0 )
     {
-        double adjacent = currentRay._currentCellX + _hx*0.5 - currentRay._posX;
-        double testOpposite =  tan(currentRay._angle) * adjacent;
+        double adjacent = deltaX;
+        double testOpposite =  tan(fabs(currentRay._angle)) * adjacent;
 
         //ray hits bottom
-        if( currentRay._angle < downerAngle )
+        if( fabs(currentRay._angle) > downerAngle )
         {
-            double adjacent = _hy / tan(-currentRay._angle);
+            double adjacent = _hy / tan(fabs(currentRay._angle));
             currentRay._posX += adjacent;
             currentRay._posY = currentRay._currentCellY - _hy*0.5;
             currentRay._currentCellY -= _hy;
@@ -184,7 +191,7 @@ void Grid::traceRay(Ray& currentRay, int index)
         else
         {
             currentRay._posX = currentRay._currentCellX + _hx*0.5;
-            currentRay._posY += testOpposite;
+            currentRay._posY -= testOpposite;
             currentRay._currentCellX += _hx;
         }
 
@@ -192,7 +199,7 @@ void Grid::traceRay(Ray& currentRay, int index)
     //Ray from bottom
     else if( deltaX < _hx && currentRay._angle > 0.0 )
     {
-        double adjacent = (currentRay._currentCellX + _hx*0.5) - currentRay._posX;
+        double adjacent = deltaX;
         double testOpposite =  tan(currentRay._angle) * adjacent;
         //ray hits top
         if( currentRay._angle >upperAngle )
@@ -211,7 +218,7 @@ void Grid::traceRay(Ray& currentRay, int index)
         }
     }
 
-    if(currentRay._currentCellX >= _dimx * _hx || currentRay._currentCellY >= _dimy * _hy || currentRay._currentCellY <= 0.0 )
+    if(currentRay._currentCellX > _dimx * _hx || currentRay._currentCellY > _dimy * _hy || currentRay._currentCellY < 0.0 )
     {
         _activeRays--;
         completedRaysIndices.push_back(index);
@@ -233,7 +240,8 @@ void Grid::traceRay(Ray& currentRay, int index)
     //currentRay._power -= Pdiff;
 
 	// add power difference to array
-    _absorbedPower[(int)(currentCellY/_hy) * 60 + (int)(currentCellX/_hx)] = 255;
+    if(_absorbedPower[(int)(currentCellY/_hy) * 60 + (int)(currentCellX/_hx)] < 255.0)
+        _absorbedPower[(int)(currentCellY/_hy) * 60 + (int)(currentCellX/_hx)] = 255.0;
 
 	if(currentRay._power < 0.001 *_initialPower)
 	{
@@ -257,5 +265,6 @@ void Grid::print(std::string filename)
         if(i%60 == 0 || i%16 == 0)
              outputFile << std::endl;
 	}
+
     outputFile.close();
 }
