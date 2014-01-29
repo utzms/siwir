@@ -33,8 +33,8 @@ Grid::Grid( double P, int rays, char* absFile, char* refrFile )
 	int size= _dimx*_dimy;
 
 	//set stepsizes
-    _hx = 3/(double)_dimx;
-    _hy = 2/(double)_dimy;
+    _hx = 3.0/(double)_dimx;
+    _hy = 2.0/(double)_dimy;
 
 
 	_absorptionCoefficient	=	new double[size];
@@ -72,16 +72,16 @@ void Grid::castRays()
         double angle = -M_PI/6  + drand48() * M_PI/3;
 		//if()
         spawnedRays[i]._angle = angle;
-		spawnedRays[i]._m = tan(angle);
+        spawnedRays[i]._m = tan(angle);
 		//set ray power
         spawnedRays[i]._power = _initialPower;
-        spawnedRays[i]._currentCellX = _hx/2;
-        spawnedRays[i]._currentCellY = (int)(spawnedRays[i]._posY / _hy) * _hy + _hy/2;
+        spawnedRays[i]._currentCellX = _hx*0.5;
+        spawnedRays[i]._currentCellY = (int)(spawnedRays[i]._posY / _hy) * _hy + _hy*0.5;
     }
 
     _activeRays = _rayCount;
 	int spawnedRayIndex = 0;
-	while( _activeRays != 0)
+    while( _activeRays > 0)
 	{
 		spawnedRayIndex = 0;
 		for(std::vector<Ray>::iterator spawnedRaysIterator = spawnedRays.begin();
@@ -112,13 +112,12 @@ void Grid::traceRay(Ray& currentRay, int index)
 
     double rayOriginX = currentRay._posX;
     double rayOriginY = currentRay._posY;
-    if(currentRay._currentCellX > _dimx * _hx || currentRay._currentCellY > _dimx * _hy || currentRay._currentCellY < 0 )
+    if(currentRay._currentCellX >= _dimx * _hx || currentRay._currentCellY >= _dimy * _hy || currentRay._currentCellY <= 0 )
     {
         return;
     }
 
 
-    double xincrement = 0.01;
 	//decide wether the next Cell is entered by the Ray
 	//Propagation cases:
 
@@ -126,24 +125,24 @@ void Grid::traceRay(Ray& currentRay, int index)
 	double currentCellX = currentRay._currentCellX;
 	double currentCellY = currentRay._currentCellY;
 
-
-    if(currentRay._posY > currentRay._currentCellY - _hy/2 && currentRay._posY < currentRay._currentCellY + _hy/2 )
+    //Ray from side
+    if(currentRay._posY > currentRay._currentCellY - _hy*0.5 && currentRay._posY < currentRay._currentCellY + _hy*0.5 )
     {
-        double testOpposite =  atan(currentRay._angle) * _hx;
+        double testOpposite =  tan(currentRay._angle) * _hx;
         //ray hits top
-        if( currentRay._posY + testOpposite > currentRay._currentCellY + _hy/2)
+        if( currentRay._posY + testOpposite > currentRay._currentCellY + _hy*0.5)
         {
-            double adjacent = (currentRay._currentCellY + _hy/2 - currentRay._posY ) / tan(currentRay._angle);
+            double adjacent = (currentRay._currentCellY + _hy*0.5 - currentRay._posY ) / tan(currentRay._angle);
             currentRay._posX += adjacent;
-            currentRay._posY =  currentRay._currentCellY + _hy/2;
+            currentRay._posY =  currentRay._currentCellY + _hy*0.5;
             currentRay._currentCellY += _hy;
         }
         //ray hits bottom
-        else if(currentRay._posY + testOpposite < currentRay._currentCellY - _hy/2)
+        else if(currentRay._posY + testOpposite < currentRay._currentCellY - _hy*0.5)
         {
-            double adjacent = (currentRay._posY - currentRay._currentCellY - _hy/2  ) / tan(currentRay._angle);
+            double adjacent = abs((currentRay._posY - (currentRay._currentCellY - _hy*0.5)  ) / tan(currentRay._angle));
             currentRay._posX += adjacent;
-            currentRay._posY =  currentRay._currentCellY - _hy/2;
+            currentRay._posY =  currentRay._currentCellY - _hy*0.5;
             currentRay._currentCellY -= _hy;
         }
         //ray hits side
@@ -154,20 +153,54 @@ void Grid::traceRay(Ray& currentRay, int index)
             currentRay._currentCellX += _hx;
         }
     }
-    else if(currentRay._posX > currentRay._currentCellX - _hx/2
-            && currentRay._posY < currentRay._currentCellY)
-    {
-        double adjacent = currentRay._currentCellX + hx/2 - currentRay._posX;
-        double opposite =  atan(currentRay) * adjacent;
-    }
-    else if(currentRay._posX > currentRay._currentCellX - _hx/2
+    //Ray from Top
+    else if(currentRay._posX > currentRay._currentCellX - _hx*0.5
             && currentRay._posY > currentRay._currentCellY)
     {
-        double adjacent = currentRay._currentCellX + hx/2 - currentRay._posX;
-        double opposite =  atan(currentRay) * adjacent;
+        double adjacent = currentRay._currentCellX + _hx*0.5 - currentRay._posX;
+        double testOpposite =  tan(currentRay._angle) * adjacent;
+
+        //ray hits bottom
+        if(currentRay._posY + testOpposite < currentRay._currentCellY - _hy*0.5)
+        {
+            double adjacent = _hy / tan(currentRay._angle);
+            currentRay._posX += adjacent;
+            currentRay._posY -= _hy;
+            currentRay._currentCellY -= _hy;
+        }
+        //ray hits side
+        else
+        {
+            currentRay._posX = currentRay._currentCellX + _hx*0.5;
+            currentRay._posY += testOpposite;
+            currentRay._currentCellX += _hx;
+        }
+
+    }
+    //Ray from bottom
+    else if(currentRay._posX > currentRay._currentCellX - _hx*0.5
+            && currentRay._posY < currentRay._currentCellY)
+    {
+        double adjacent = currentRay._currentCellX + _hx*0.5 - currentRay._posX;
+        double testOpposite =  tan(currentRay._angle) * adjacent;
+        //raz hits top
+        if(currentRay._posY + testOpposite > currentRay._currentCellY + _hy*0.5)
+        {
+            double adjacent = _hy / tan(currentRay._angle);
+            currentRay._posX += adjacent;
+            currentRay._posY += _hy;
+            currentRay._currentCellY += _hy;
+        }
+        //ray hits side
+        else
+        {
+            currentRay._posX = currentRay._currentCellX + _hx*0.5;
+            currentRay._posY += testOpposite;
+            currentRay._currentCellX += _hx;
+        }
     }
 
-    if(currentRay._currentCellX > _dimx * _hx || currentRay._currentCellY > _dimx * _hy || currentRay._currentCellY < 0 )
+    if(currentRay._currentCellX >= _dimx * _hx || currentRay._currentCellY >= _dimy * _hy || currentRay._currentCellY <= 0 )
     {
         _activeRays--;
         completedRaysIndices.push_back(index);
@@ -189,7 +222,7 @@ void Grid::traceRay(Ray& currentRay, int index)
     //currentRay._power -= Pdiff;
 
 	// add power difference to array
-    _absorbedPower[(int)currentCellY * 60 + (int)currentCellY] += 255;
+    _absorbedPower[(int)(currentCellY/_hy) * 60 + (int)(currentCellX/_hx)] = 255;
 
 	if(currentRay._power < 0.001 *_initialPower)
 	{
