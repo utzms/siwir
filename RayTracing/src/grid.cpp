@@ -69,7 +69,9 @@ void Grid::castRays()
         spawnedRays[i]._posY = -0.1 + 0.2 * drand48() + 1.0;
 		spawnedRays[i]._b = spawnedRays[i]._posY;
         //set angles
-        double angle = -drand48() * M_PI/3;
+        //double angle = M_PI/6 -drand48() * M_PI/3;
+        //double angle = drand48() * M_PI/6;
+        double angle = -drand48() * M_PI/6;
         //if(M_PI/6  + )
         spawnedRays[i]._angle = angle;
         spawnedRays[i]._m = tan(angle);
@@ -121,19 +123,23 @@ void Grid::traceRay(Ray& currentRay, int index)
 	//decide wether the next Cell is entered by the Ray
 	//Propagation cases:
     //compute corner vectors
+
+    //-- checked
     double deltaX = ( (currentRay._currentCellX + _hx*0.5) -  currentRay._posX);
     double deltaYup = ((currentRay._currentCellY + _hy*0.5) - currentRay._posY);
     double deltaYdown = (currentRay._posY - (currentRay._currentCellY - _hy*0.5));
+    //--
+
 
     double upperAngle = atan2( deltaYup, deltaX );
-    double downerAngle= atan2( deltaYdown, deltaX);
+    double downerAngle= atan2( deltaX, deltaYdown);
 
 	double cellRefractionIndex = 0.0;
 	double currentCellX = currentRay._currentCellX;
 	double currentCellY = currentRay._currentCellY;
 
     //Ray from side
-    if(currentRay._posY > currentRay._currentCellY - _hy*0.5 && currentRay._posY < currentRay._currentCellY + _hy*0.5 )
+    if(currentRay._posX <= currentCellX - _hx*.5)
     {
         double testOpposite =  tan(currentRay._angle) * _hx;
         //ray hits top
@@ -145,7 +151,7 @@ void Grid::traceRay(Ray& currentRay, int index)
             currentRay._currentCellY += _hy;
         }
         //ray hits bottom
-        else if(  currentRay._angle < downerAngle)
+        else if(  abs(currentRay._angle) > downerAngle)
         {
             double adjacent = deltaYdown / tan( -currentRay._angle);
             currentRay._posX += adjacent;
