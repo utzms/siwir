@@ -5,6 +5,7 @@
 #include <vector>
 #include <string>
 #include <math.h>
+
 //#include <pam.h>
 
 #include "ray.h"
@@ -39,8 +40,8 @@ class Grid
 	public:
         Grid( double P, int rays, char* absFile, char* refrFile );
 		void castRays();
-		void traceRay(Ray& currentRay, int index);
-		void alterAngle(Ray& currentRay, double);
+        void traceRay(Ray& currentRay, int index,int&);
+        void alterAngle(Ray& currentRay, double);
 
 		void print(std::string filename);
 };

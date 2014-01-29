@@ -10,7 +10,7 @@ Grid::Grid( double P, int rays, char* absFile, char* refrFile )
 	int ytmp;
 	int maxtmp;
 
-    _initialPower = P;
+    _initialPower = 10.0;
     char del;
     int  delInt;
     absCoeffFile >> del;
@@ -30,7 +30,7 @@ Grid::Grid( double P, int rays, char* absFile, char* refrFile )
 	_maxValue = maxtmp;
 
 	//determine gridsize
-	int size= _dimx*_dimy;
+    int size= _dimx*_dimy;
 
 	//set stepsizes
     _hx = 3.0/(double)_dimx;
@@ -43,6 +43,7 @@ Grid::Grid( double P, int rays, char* absFile, char* refrFile )
     for(int i = 0;i < size;)
 	{
 		absCoeffFile >> _absorptionCoefficient[i];
+        _absorptionCoefficient[i] /= 255.0;
 		refrIndFile  >> _refractionIndex[i];
 		_absorbedPower[i++] = 0.0;
 	}
@@ -61,53 +62,80 @@ Grid::Grid( double P, int rays, char* absFile, char* refrFile )
 void Grid::castRays()
 {
     //Ray Initialization
-    srand48(1.0);
+    srand48(5);
     for( int i = 0; i < _rayCount ; ++i)
     {
         //set initial values
         spawnedRays[i]._posX = 0.0;
         spawnedRays[i]._posY = -0.1 + 0.2 * drand48() + 1.0;
-		spawnedRays[i]._b = spawnedRays[i]._posY;
         //set angles
-        double angle = M_PI/6 -drand48() * M_PI/3;
+        double angle = M_PI/4 -drand48() * M_PI/2;
         //double angle = drand48() * M_PI/6;
         //double angle = -drand48() * M_PI/2;
         //if(M_PI/6  + )
         spawnedRays[i]._angle = angle;
-        spawnedRays[i]._m = tan(angle);
 		//set ray power
-        spawnedRays[i]._power = _initialPower;
+        spawnedRays[i]._power = _initialPower/_rayCount;
         spawnedRays[i]._currentCellX = _hx*0.5;
         spawnedRays[i]._currentCellY = (int)(spawnedRays[i]._posY / _hy) * _hy + _hy*0.5;
-        spawnedRays[i]._refractionIndex = _refractionIndex[(int)(spawnedRays[i]._currentCellY/_hy) * 60 + (int)(spawnedRays[i]._currentCellX/_hx)];
+        spawnedRays[i]._refractionIndex = _refractionIndex[(int)(spawnedRays[i]._currentCellY/_hy) * _dimx + (int)(spawnedRays[i]._currentCellX/_hx)];
     }
 
     _activeRays = _rayCount;
-	int spawnedRayIndex = 0;
     while( _activeRays > 0)
 	{
-		spawnedRayIndex = 0;
-		for(std::vector<Ray>::iterator spawnedRaysIterator = spawnedRays.begin();
-			spawnedRaysIterator != spawnedRays.end();
-			spawnedRaysIterator++)
+        int raysToDecrement = 0;
+        #pragma omp parallel for reduction (+: raysToDecrement)
+        for(int i = 0; i < _rayCount; ++i)
 		{
-            traceRay(*spawnedRaysIterator, spawnedRayIndex);
-            ++spawnedRayIndex;
+            traceRay(spawnedRays[i], i, raysToDecrement);
 		}
+        _activeRays -= raysToDecrement;
 	}
+
+    for(int i = 0; i < _rayCount; ++i)
+    {
+        for(std::vector<Cell>::iterator cellsIterator = spawnedRays[i].cells.begin()
+            ; cellsIterator < spawnedRays[i].cells.end()
+            ; cellsIterator++
+            )
+        {
+             _absorbedPower[(int)(cellsIterator->indexY/_hy) * _dimx + (int)(cellsIterator->indexX/_hx)] += cellsIterator->Pvalue;
+        }
+    }
+
+    double max = 0.0;
+    double sum = 0.0;
+    for(int i = 0;  i < _dimx*_dimy; ++i)
+    {
+        double powerAtCell = _absorbedPower[i];
+        if(powerAtCell > max)
+        {
+            max = powerAtCell;
+        }
+        sum += powerAtCell;
+    }
+    std::cout <<"maximally absorbed power: "<<  max << std::endl;
+    std::cout <<"overall absorbed power: "<<  sum << std::endl;
+
+    for(int i = 0;  i < _dimx*_dimy; ++i)
+    {
+        _absorbedPower[i] = _absorbedPower[i] / max * 255.0;
+    }
+
 
 }
 
-void Grid::alterAngle(Ray& currentRay, double refractionIndex)
-{   std::cout << "refrIdx change-NewrefractionIndex:" << refractionIndex << std::endl;
-    std::cout << "refrIdx change-oldrefractionIndex:" << currentRay._refractionIndex  << std::endl;
-	currentRay._refractionIndex = refractionIndex;
-    std::cout << "refrIdx change-_currentCellX:" << currentRay._currentCellX << std::endl;
+void Grid::alterAngle(Ray& currentRay, double refractionIndex )
+{
+    double newAngle = asin((refractionIndex / currentRay._refractionIndex ) * sin(currentRay._angle));
+	currentRay._refractionIndex = refractionIndex;  
+    currentRay._angle = newAngle;
 
 	return;
 }
 
-void Grid::traceRay(Ray& currentRay, int index)
+void Grid::traceRay(Ray& currentRay, int index, int& raysToDecrement)
 {
 
 	// Cell Layout( 5 propagation cases )
@@ -124,7 +152,7 @@ void Grid::traceRay(Ray& currentRay, int index)
     }
 
 
-	//decide wether the next Cell is entered by the Ray
+    //decide wether the next Cell is entered by the Ray_absorbedPower[i]
 	//Propagation cases:
     //compute corner vectors
 
@@ -148,7 +176,7 @@ void Grid::traceRay(Ray& currentRay, int index)
         double testOpposite =   tan(fabs(currentRay._angle)) * _hx;
         //ray hits top
         if(  currentRay._angle > 0.0 && currentRay._angle > upperAngle)
-        {
+        {std::vector< Cell > cells;
             double adjacent = deltaYup / tan(currentRay._angle);
             currentRay._posX += adjacent;
             currentRay._posY =  currentRay._currentCellY + _hy*0.5;
@@ -186,8 +214,8 @@ void Grid::traceRay(Ray& currentRay, int index)
         //ray hits bottom
         if( fabs(currentRay._angle) > downerAngle )
         {
-            double adjacent = _hy / tan(fabs(currentRay._angle));
-            currentRay._posX += adjacent;
+            double adjacentNew = _hy / tan(fabs(currentRay._angle));
+            currentRay._posX += adjacentNew;
             currentRay._posY = currentRay._currentCellY - _hy*0.5;
             currentRay._currentCellY -= _hy;
         }
@@ -208,8 +236,8 @@ void Grid::traceRay(Ray& currentRay, int index)
         //ray hits top
         if( currentRay._angle >upperAngle )
         {
-            double adjacent = _hy / tan(currentRay._angle);
-            currentRay._posX += adjacent;
+            double adjacentNew = _hy / tan(currentRay._angle);
+            currentRay._posX += adjacentNew;
             currentRay._posY = currentRay._currentCellY + _hy*0.5;
             currentRay._currentCellY += _hy;
         }
@@ -224,37 +252,42 @@ void Grid::traceRay(Ray& currentRay, int index)
 
     if(currentRay._currentCellX > _dimx * _hx || currentRay._currentCellY > _dimy * _hy || currentRay._currentCellY < 0.0 )
     {
-        _activeRays--;
-        completedRaysIndices.push_back(index);
+        raysToDecrement += 1;
         return;
     }
 
 
-    cellRefractionIndex = _refractionIndex[(int)(currentRay._currentCellY/_hy) * 60 + (int)(currentRay._currentCellX/_hx)];
+    cellRefractionIndex = _refractionIndex[(int)(currentRay._currentCellY/_hy) * _dimx + (int)(currentRay._currentCellX/_hx)];
     if(currentRay._refractionIndex > cellRefractionIndex || currentRay._refractionIndex < cellRefractionIndex)
     {
         alterAngle(currentRay ,cellRefractionIndex);
     }
 
+    double rayLengthX = currentRay._posX - rayOriginX;
+    double rayLengthY = currentRay._posY - rayOriginY;
+    double length = sqrt(rayLengthX*rayLengthX + rayLengthY*rayLengthY);
+
 	//compute Lambert Beer
 	double Pout = currentRay._power
-            * exp( -_absorptionCoefficient[(int)currentRay._currentCellY * 60 + (int)currentRay._currentCellX]
-            * _hx);
+            * exp( -1.0*_absorptionCoefficient[(int)(lastCellY/_hy) * _dimx + (int)(lastCellX/_hx)]
+            * length);
 
 	//compute power difference
-	double	Pdiff  =  Pout - currentRay._power;
-    //currentRay._power -= Pdiff;
+    double	Pdiff  =  currentRay._power - Pout;
+    currentRay._power -= Pdiff;
 
 	// add power difference to array
-    if(_absorbedPower[(int)(lastCellY/_hy) * 60 + (int)(lastCellX/_hx)] < 255.0)
-        _absorbedPower[(int)(lastCellY/_hy) * 60 + (int)(lastCellX/_hx)] = 255.0;
 
-	if(currentRay._power < 0.001 *_initialPower)
-	{
-		_activeRays--;
-		completedRaysIndices.push_back(index);
-		return;
-	}
+    Cell newCell;
+    newCell.indexX = lastCellX;
+    newCell.indexY = lastCellY;
+    newCell.Pvalue = Pdiff;
+    currentRay.cells.push_back(newCell);
+    if(currentRay._power < 0.001 *_initialPower/_rayCount)
+    {
+        raysToDecrement += 1;
+        return;
+    }
 }
 
 void Grid::print(std::string filename)
@@ -267,8 +300,8 @@ void Grid::print(std::string filename)
 
     for(int i = 0; i < size; ++i)
 	{
-		outputFile << _absorbedPower[i] << " ";
-        if(i%60 == 0 || i%16 == 0)
+        outputFile << (int)_absorbedPower[i] << " ";
+        if(i%_dimx == 0 || i%16 == 0)
              outputFile << std::endl;
 	}
 
